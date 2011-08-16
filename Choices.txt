@@ -1,0 +1,32 @@
+1:- What is the Design architectural choices made during the development ?
+
+4 layer architecture. 
+		i) Presentation Layer
+	   ii) Business Logic Layer
+	  iii) Persistence Layer
+	   iV) Database Layer.
+	   
+
+Transaction Script: 
+		Where Transaction Script is a method that handles requests from Presentation Layer 
+		organizes the domain logic and accessing the database through DAO. 
+		Since transaction script pattern access the request from the Presentation Layer so the code may get larger
+		and thus making harder to maintain.
+		Thus use this pattern only when the domain logic is simple.  
+It could be a good choice.
+
+Model-Delegate: Suitable for Swing based application.
+		
+Domain Driven Design: Not used as it could be overkill.
+
+
+Dependency Injection: Not suitable for our situation as its complex for our implementation.
+
+
+
+
+
+
+
+
+	     

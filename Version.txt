@@ -1,0 +1,2 @@
+JDK version used: 1.6.0_22
+Host platform: Windows Vista

@@ -6,6 +6,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Properties;
 
+import suncertify.common.ApplicationException;
+
 /**
  * This class backups the configuration parameters of the application. The
  * parameters are stored in the suncertify.properties file located in the

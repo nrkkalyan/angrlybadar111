@@ -1,5 +1,9 @@
 package suncertify.gui;
 
+import suncertify.common.DBConnector;
+import suncertify.common.DBServices;
+import suncertify.local.DBConnectorLocal;
+
 /**
  * This class acts as a controller between the GUI and the Business logic.
  * 

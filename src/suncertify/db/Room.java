@@ -21,11 +21,11 @@ public class Room implements Serializable {
 	private String				mHotelName;
 	private String				mLocation;
 	private Integer				mMaxOccupancy;
-	private Boolean				mIsSmoking;
+	private boolean				mIsSmoking;
 	private String				mPricePerNight;
 	private Date				mAvailableDate;
 	private Long				mCustomerId;
-	private Boolean				mIsValid;
+	private boolean				mIsValid;
 	
 	/**
 	 * @return the mRecordId
@@ -90,7 +90,7 @@ public class Room implements Serializable {
 	/**
 	 * @return the mIsSmoking
 	 */
-	public Boolean getIsSmoking() {
+	public boolean getIsSmoking() {
 		return mIsSmoking;
 	}
 	
@@ -98,7 +98,7 @@ public class Room implements Serializable {
 	 * @param isSmoking
 	 *            the mIsSmoking to set
 	 */
-	public void setIsSmoking(Boolean isSmoking) {
+	public void setIsSmoking(boolean isSmoking) {
 		this.mIsSmoking = isSmoking;
 	}
 	
@@ -150,7 +150,7 @@ public class Room implements Serializable {
 	/**
 	 * @return the mIsValid
 	 */
-	public Boolean isValid() {
+	public boolean isValid() {
 		return mIsValid;
 	}
 	
@@ -158,7 +158,61 @@ public class Room implements Serializable {
 	 * @param isValid
 	 *            the mIsValid to set
 	 */
-	public void setIsValid(Boolean isValid) {
+	public void setIsValid(boolean isValid) {
 		this.mIsValid = isValid;
 	}
+	
+	public boolean matchAlike(Room room) {
+		if (room == null) {
+			return false;
+		}
+		boolean match = true;
+		match &= matchIfNotNull(this.mAvailableDate, room.mAvailableDate);
+		match &= matchIfNotNull(this.mCustomerId, room.mCustomerId);
+		match &= matchIfNotNull(this.mHotelName, room.mHotelName);
+		match &= matchIfNotNull(this.mIsSmoking, room.mIsSmoking);
+		match &= matchIfNotNull(this.mIsValid, room.mIsValid);
+		match &= matchIfNotNull(this.mLocation, room.mLocation);
+		match &= matchIfNotNull(this.mMaxOccupancy, room.mMaxOccupancy);
+		match &= matchIfNotNull(this.mPricePerNight, room.mPricePerNight);
+		return match;
+	}
+	
+	private boolean matchIfNotNull(Object obj1, Object obj2) {
+		if (obj1 != null && obj2 != null) {
+			if (obj1 instanceof String && obj2 instanceof String) {
+				// Match if the obj1 begins with obj2
+				return ((String) obj1).startsWith((String) obj2);
+			} else { // Rest all i.e Integer, Long, Boolean etc
+				return obj1.equals(obj2);
+			}
+		}
+		return true;
+	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((this.mRecordId == null) ? 0 : this.mRecordId.hashCode());
+		return result;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Room other = (Room) obj;
+		if (this.mRecordId == null) {
+			if (other.mRecordId != null)
+				return false;
+		} else if (!this.mRecordId.equals(other.mRecordId))
+			return false;
+		return true;
+	}
+	
 }

@@ -138,19 +138,36 @@ public final class DataFileAccess implements Serializable {
 	}
 	
 	public Integer[] find(String[] criteria) {
-		Room room = RoomConverter.roomFromStringArray(criteria, null);
 		List<Integer> recordList = new ArrayList<Integer>();
+		getMatchRecords(criteria, recordList);
+		Integer[] recordArray = new Integer[recordList.size()];
+		recordList.toArray(recordArray);
+		return recordArray;
+	}
+	
+	private List<Room> getMatchRecords(String[] criteria, boolean matchExactly) {
+		List<Room> recordList = new ArrayList<Room>();
+		Room room = RoomConverter.roomFromStringArray(criteria, null);
 		try {
 			mReadWriteLock.readLock().lock();
 			Collection<Room> rooms = mRecordMap.values();
 			for (Room r : rooms) {
-				if (r.match(room)) {
-					recordList.add(r.getRecordId());
+				if (matchExactly) {
+					
+				} else {
+					if (r.matchAlike(room)) {
+						recordList.add(r);
+					}
 				}
 			}
 		} finally {
 			mReadWriteLock.readLock().unlock();
 		}
-		return (Integer[]) recordList.toArray();
+		return recordList;
 	}
+	
+	public List<Room> search(String[] criteria) {
+		
+	}
+	
 }

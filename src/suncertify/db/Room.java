@@ -190,6 +190,29 @@ public class Room implements Serializable {
 		return true;
 	}
 	
+	public boolean matchExactly(Room room) {
+		if (room == null) {
+			return false;
+		}
+		boolean match = true;
+		match &= matchEqualityIfNotNull(this.mAvailableDate, room.mAvailableDate);
+		match &= matchEqualityIfNotNull(this.mCustomerId, room.mCustomerId);
+		match &= matchEqualityIfNotNull(this.mHotelName, room.mHotelName);
+		match &= matchEqualityIfNotNull(this.mIsSmoking, room.mIsSmoking);
+		match &= matchEqualityIfNotNull(this.mIsValid, room.mIsValid);
+		match &= matchEqualityIfNotNull(this.mLocation, room.mLocation);
+		match &= matchEqualityIfNotNull(this.mMaxOccupancy, room.mMaxOccupancy);
+		match &= matchEqualityIfNotNull(this.mPricePerNight, room.mPricePerNight);
+		return match;
+	}
+	
+	private boolean matchEqualityIfNotNull(Object obj1, Object obj2) {
+		if (obj1 != null && obj2 != null) {
+			return obj1.equals(obj2);
+		}
+		return true;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

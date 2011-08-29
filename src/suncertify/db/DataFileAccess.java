@@ -108,21 +108,6 @@ public final class DataFileAccess implements Serializable {
 		}
 	}
 	
-	public String[] read(int recordId) throws RecordNotFoundException {
-		try {
-			mReadWriteLock.writeLock().lock();
-			
-			Room room = mRecordMap.get(recordId);
-			if (room != null && room.isValid()) {
-				return RoomConverter.stringArrayFromRoom(room);
-			} else {
-				throw new RecordNotFoundException(ErrorCodes.RECORD_NOT_FOUND.name());
-			}
-		} finally {
-			mReadWriteLock.writeLock().unlock();
-		}
-	}
-	
 	public void update(int recordId, String[] data) {
 		Room room = RoomConverter.roomFromStringArray(data, recordId);
 		update(recordId, room);
@@ -137,24 +122,62 @@ public final class DataFileAccess implements Serializable {
 		}
 	}
 	
-	public Integer[] find(String[] criteria) {
-		List<Integer> recordList = new ArrayList<Integer>();
-		getMatchRecords(criteria, recordList);
-		Integer[] recordArray = new Integer[recordList.size()];
-		recordList.toArray(recordArray);
-		return recordArray;
+	public int[] find(String[] criteria) {
+		boolean exactMatch = false;
+		List<Room> matchedRecords = getMatchRecords(criteria, exactMatch);
+		int[] recordList = new int[matchedRecords.size()];
+		int i = 0;
+		for (Room room : matchedRecords) {
+			recordList[i++] = room.getRecordId();
+		}
+		return recordList;
 	}
 	
-	private List<Room> getMatchRecords(String[] criteria, boolean matchExactly) {
+	public List<Room> search(String[] criteria) {
+		boolean exactMatch = true;
+		return getMatchRecords(criteria, exactMatch);
+	}
+	
+	public void saveRecords() {
+		try {
+			mReadWriteLock.writeLock().lock();
+			DBFileParser parser = new DBFileParser(mDBFilePath);
+			parser.saveRecords(mRecordMap);
+		} finally {
+			mReadWriteLock.writeLock().unlock();
+		}
+	}
+	
+	public String[] read(int recNo) throws RecordNotFoundException {
+		return RoomConverter.stringArrayFromRoom(readRoom(recNo));
+	}
+	
+	public Room readRoom(int recNo) throws RecordNotFoundException {
+		try {
+			mReadWriteLock.readLock().lock();
+			Room room = mRecordMap.get(recNo);
+			if (room != null && room.isValid()) {
+				return room;
+			} else {
+				throw new RecordNotFoundException(ErrorCodes.RECORD_NOT_FOUND.name());
+			}
+		} finally {
+			mReadWriteLock.readLock().unlock();
+		}
+	}
+	
+	private List<Room> getMatchRecords(String[] criteria, boolean getExactMatch) {
 		List<Room> recordList = new ArrayList<Room>();
 		Room room = RoomConverter.roomFromStringArray(criteria, null);
 		try {
 			mReadWriteLock.readLock().lock();
 			Collection<Room> rooms = mRecordMap.values();
 			for (Room r : rooms) {
-				if (matchExactly) {
-					
+				// Condition for search[] method
+				if (getExactMatch && r.matchExactly(room)) {
+					recordList.add(r);
 				} else {
+					// Condition for find[] Method
 					if (r.matchAlike(room)) {
 						recordList.add(r);
 					}
@@ -166,7 +189,7 @@ public final class DataFileAccess implements Serializable {
 		return recordList;
 	}
 	
-	public List<Room> search(String[] criteria) {
+	public long lock(int recNo) throws RecordNotFoundException {
 		
 	}
 	

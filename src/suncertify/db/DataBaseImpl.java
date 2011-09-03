@@ -10,7 +10,9 @@
 package suncertify.db;
 
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 
 import suncertify.common.ApplicationException;
@@ -19,16 +21,22 @@ import suncertify.common.ApplicationException;
  * @author Kalyan
  * 
  */
-public class Data implements DBMainExtended, Serializable {
+public class DataBaseImpl implements DBExtended, Serializable {
+	
+	private final int						offset;
+	private final int						nooffields;
+	private final String[]					fieldnames;
+	private final HashMap<String, Short>	fieldmap;
+	private int								recordlength;
+	private final RandomAccessFile			ras;
 	
 	/**
 	 * 
 	 */
-	private static final long		serialVersionUID	= 1L;
-	private final DataFileAccess	mDataFileAccess;
+	private static final long				serialVersionUID	= 1L;
 	
-	public Data(){
-		mDataFileAccess= 
+	public DataBaseImpl(String dbFileName, String magicCokie) throws IOException {
+		
 	}
 	
 	@Override

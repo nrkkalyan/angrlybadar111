@@ -10,7 +10,7 @@ import suncertify.common.ApplicationException;
  * {@link DB} which was provided by this assignment in order to be compliant
  * with the requirements.
  */
-public interface DBMainExtended extends DB {
+public interface DBExtended extends DB {
 	
 	/**
 	 * Returns a list of records that matches the specified criteria. The field

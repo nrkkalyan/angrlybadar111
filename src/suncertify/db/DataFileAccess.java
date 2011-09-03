@@ -30,7 +30,7 @@ public final class DataFileAccess implements Serializable {
 	private static ReadWriteLock		mReadWriteLock			= new ReentrantReadWriteLock();
 	
 	// Map of all locked records
-	private static Map<Integer, Data>	mLockMap				= new HashMap<Integer, Data>();
+	private static Map<Integer, DataBaseImpl>	mLockMap				= new HashMap<Integer, DataBaseImpl>();
 	
 	// Lock to access the map with all the locked records
 	private static Lock					mLock					= new ReentrantLock();

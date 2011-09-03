@@ -6,18 +6,18 @@ import java.util.List;
 
 import suncertify.common.ApplicationException;
 import suncertify.common.DBServices;
-import suncertify.db.DBMainExtended;
-import suncertify.db.Data;
+import suncertify.db.DBExtended;
+import suncertify.db.DataBaseImpl;
 import suncertify.db.RecordNotFoundException;
 import suncertify.db.Room;
 
 /** Local implementation of {@link DBServices} interface. */
 public class DBServicesLocalImpl implements DBServicesLocal {
 	
-	private final DBMainExtended	mDb;
+	private final DBExtended	mDb;
 	
 	public DBServicesLocalImpl(String dbFilePath) {
-		mDb = new Data(dbFilePath);
+		mDb = new DataBaseImpl(dbFilePath);
 	}
 	
 	@Override

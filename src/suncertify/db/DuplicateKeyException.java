@@ -1,27 +1,27 @@
-/**
- * 
- */
 package suncertify.db;
 
 /**
- * @author koosie
+ * @author Koosie
  * 
  */
-public class DuplicateKeyException extends DatabaseException {
-
+public class DuplicateKeyException extends Exception {
+	
+	/**
+	 * 
+	 */
+	private static final long	serialVersionUID	= 1L;
+	
 	/**
 	 * 
 	 */
 	public DuplicateKeyException() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
-
+	
 	/**
 	 * @param message
 	 */
 	public DuplicateKeyException(String message) {
 		super(message);
-		// TODO Auto-generated constructor stub
 	}
 }

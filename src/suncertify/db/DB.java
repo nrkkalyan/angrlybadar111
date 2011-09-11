@@ -1,10 +1,7 @@
-/**
- * 
- */
 package suncertify.db;
 
 /**
- * @author koosie
+ * @author Koosie
  * 
  */
 public interface DB {

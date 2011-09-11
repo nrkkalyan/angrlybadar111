@@ -1,14 +1,11 @@
-/**
- * 
- */
 package suncertify.db;
 
 /**
  * 
- * @author kalyan
+ * @author Koosie
  * 
  */
-public class RecordNotFoundException extends DatabaseException {
+public class RecordNotFoundException extends Exception {
 	
 	/**
 	 * 

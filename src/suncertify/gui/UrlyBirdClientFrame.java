@@ -28,12 +28,12 @@ public class UrlyBirdClientFrame extends JFrame {
 	 * Panel that contains the menubar.
 	 * */
 	private final ControlPanel	mControlPannel;
-	private final TablePannel	mTablePannel;
+	private final TablePanel	mTablePannel;
 	
 	public UrlyBirdClientFrame() {
 		super("UrlyBird 1.1.1 Application");
 		mControlPannel = new ControlPanel();
-		mTablePannel = new TablePannel();
+		mTablePannel = new TablePanel();
 		this.getContentPane().add(BorderLayout.NORTH, mControlPannel);
 		this.getContentPane().add(BorderLayout.CENTER, mTablePannel);
 	}

@@ -38,7 +38,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 	private final JMenuBar		mMenuBar			= new JMenuBar();
 	private final JTextField	mHotelName			= new JTextField(10);
 	private final JTextField	mLocation			= new JTextField(10);
-	private final JButton		mSearchBtn			= new JButton("Search/Show All");
+	private final JButton		mSearchBtn			= new JButton("Search / Show All");
 	private final JButton		mBookButton			= new JButton("Book");
 	
 	private ActionListener		mActionListner;

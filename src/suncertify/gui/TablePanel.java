@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -44,48 +45,58 @@ public class TablePanel extends JPanel implements Observer {
 	
 	private class DataModel extends AbstractTableModel {
 		
-		private final String[]		mColumnNames	= new String[0];
-		private final String[][]	mDisplayRows	= new String[0][0];
-		
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see javax.swing.table.TableModel#getRowCount()
-		 */
-		@Override
-		public int getRowCount() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-		
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see javax.swing.table.TableModel#getColumnCount()
-		 */
-		@Override
-		public int getColumnCount() {
-			// TODO Auto-generated method stub
-			return 0;
-		}
-		
-		/*
-		 * (non-Javadoc)
-		 * 
-		 * @see javax.swing.table.TableModel#getValueAt(int, int)
-		 */
-		@Override
-		public Object getValueAt(int rowIndex, int columnIndex) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
 		/**
 		 * 
 		 */
+		private static final long	serialVersionUID	= 1L;
+		private String[]			mColumnNames		= new String[0];
+		private String[][]			mDisplayRows;
+		
+		private DataModel() {
+			if (mClientModel != null) {
+				mDisplayRows = mClientModel.getDisplayRows();
+			} else {
+				mDisplayRows = new String[0][0];
+			}
+		}
+		
 		public void refresh() {
-			// TODO Auto-generated method stub
-			
+			if (mClientModel != null) {
+				mDisplayRows = mClientModel.getDisplayRows();
+				mColumnNames = mClientModel.getColumns();
+			}
+		}
+		
+		@Override
+		public int getRowCount() {
+			if (mDisplayRows != null) {
+				return mDisplayRows.length;
+			}
+			return 0;
+		}
+		
+		@Override
+		public int getColumnCount() {
+			if (mColumnNames != null) {
+				return mColumnNames.length;
+			}
+			return 0;
+		}
+		
+		@Override
+		public String getColumnName(int col) {
+			return mColumnNames[col];
+		}
+		
+		@Override
+		public Object getValueAt(int row, int col) {
+			if (col == 0) {
+				return "" + row + 1;
+			}
+			if (mDisplayRows != null && mDisplayRows.length >= row && mDisplayRows[row].length >= col) {
+				return mDisplayRows[row][col].trim();
+			}
+			return "";
 		}
 		
 	}
@@ -121,4 +132,17 @@ public class TablePanel extends JPanel implements Observer {
 		}
 	}
 	
+	public int getSelectedIndex() {
+		return mRecordTable.getSelectedRow();
+	}
+	
+	public static void main(String[] args) {
+		ClientModel cm = new ClientModel();
+		JFrame jf = new JFrame();
+		TablePanel cdp = new TablePanel();
+		cdp.update(cm, new Boolean(true));
+		jf.setSize(600, 400);
+		jf.getContentPane().add("Center", cdp);
+		jf.setVisible(true);
+	}
 }

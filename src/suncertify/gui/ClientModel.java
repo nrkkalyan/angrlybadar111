@@ -11,20 +11,31 @@ import java.util.Observable;
  */
 public class ClientModel extends Observable {
 	
+	private String[][]		mDisplayRows;
+	private final String[]	mColumnNames;
+	
+	public ClientModel() {
+		mColumnNames = new String[] { "Sr No", "Hotel Name", "Location", "Size", "Smoking", "Rate", "Date", "Customer Id" };
+		setChanged();
+	}
+	
 	/**
 	 * @return
 	 */
 	public String[][] getDisplayRows() {
-		// TODO Auto-generated method stub
-		return null;
+		return mDisplayRows;
+	}
+	
+	public void setDisplayRows(String[][] displayRows) {
+		this.mDisplayRows = displayRows;
+		setChanged();
 	}
 	
 	/**
 	 * @return
 	 */
 	public String[] getColumns() {
-		// TODO Auto-generated method stub
-		return null;
+		return mColumnNames;
 	}
 	
 }

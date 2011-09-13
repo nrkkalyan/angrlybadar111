@@ -4,6 +4,7 @@
 package suncertify.gui;
 
 import java.awt.BorderLayout;
+import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 
@@ -36,6 +37,18 @@ public class UrlyBirdClientFrame extends JFrame {
 		mTablePannel = new TablePanel();
 		this.getContentPane().add(BorderLayout.NORTH, mControlPannel);
 		this.getContentPane().add(BorderLayout.CENTER, mTablePannel);
+	}
+	
+	public void setCPActionListener(ActionListener al) {
+		mControlPannel.setCPActionListener(al);
+	}
+	
+	public void setModel(ClientModel cm) {
+		cm.addObserver(mTablePannel);
+	}
+	
+	public TablePanel getTablePanel() {
+		return mTablePannel;
 	}
 	
 }

@@ -10,27 +10,23 @@ package suncertify.gui;
  * */
 public class Main {
 	
-	private static final String	SERVER_MODE_FLAG		= "server";
-	private static final String	STANDALONE_MODE_FLAG	= "alone";
-	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		if (args.length == 0) {
 			UrlyBirdClientMain.start("rmi");
-		} else if (SERVER_MODE_FLAG.equalsIgnoreCase(args[0])) {
-			UrlyBirdRMIServer.start("server");
-		} else if (STANDALONE_MODE_FLAG.equalsIgnoreCase(args[0])) {
-			UrlyBirdClientMain.start("none");
+		} else if (GuiConstants.SERVER_MODE_FLAG.equalsIgnoreCase(args[0])) {
+			UrlyBirdRMIServer.start(GuiConstants.SERVER_MODE_FLAG);
+		} else if (GuiConstants.STANDALONE_MODE_FLAG.equalsIgnoreCase(args[0])) {
+			UrlyBirdClientMain.start(GuiConstants.STANDALONE_MODE_FLAG);
 		} else {
 			usage();
 		}
 	}
 	
 	private static void usage() {
-		System.err.println("Usage: java -jar runme.jar [options]\n" + "[options]:\n"
-				+ "server\t - Run in server mode.\n" + "alone\t - Run in standalone mode.\n"
+		System.err.println("Usage: java -jar runme.jar [options]\n" + "[options]:\n" + "server\t - Run in server mode.\n" + "alone\t - Run in standalone mode.\n"
 				+ "* If no mode is specified, the application will run as network client mode.\n");
 		System.exit(1);
 	}

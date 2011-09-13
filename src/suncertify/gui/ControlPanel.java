@@ -136,7 +136,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 	 * @param actionListner
 	 *            the actionListner to set
 	 */
-	public void setActionListner(ActionListener actionListner) {
+	public void setCPActionListener(ActionListener actionListner) {
 		this.mActionListner = actionListner;
 	}
 	

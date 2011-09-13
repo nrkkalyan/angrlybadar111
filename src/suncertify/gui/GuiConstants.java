@@ -8,6 +8,9 @@ package suncertify.gui;
  * 
  */
 final class GuiConstants {
+	public static final String	SERVER_MODE_FLAG		= "server";
+	public static final String	STANDALONE_MODE_FLAG	= "alone";
+	public static final String	NETWORK_MODE_FLAG		= "rmi";
 	
 	public enum Commands {
 		

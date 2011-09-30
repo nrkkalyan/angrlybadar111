@@ -15,7 +15,7 @@ final class GuiConstants {
 	
 	public enum Commands {
 		
-		SEARCH_ALL, SEARCH_BY_NAME_AND_LOC, BOOK_ROOM, EXIT;
+		SEARCH_ALL, SEARCH_BY_NAME_AND_LOC, BOOK_ROOM, EXIT, CONNECT_LOCAL, CONNECT_REMOTE;
 		
 		/**
 		 * @param actionCommand

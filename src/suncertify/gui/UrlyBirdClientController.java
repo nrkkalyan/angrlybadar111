@@ -19,14 +19,14 @@ import javax.swing.JOptionPane;
  */
 public class UrlyBirdClientController implements ActionListener {
 	
-	private final UrlyBirdClientFrame		mClientFrame;
-	private final ClientModel				mClientModel;
-	private UBServer						mUBServer;
-	private String							mCurrentHotelName;
-	private String							mCurrentLocation;
-	private String							mCurrentQuery;
-	private boolean							mLocalFlag	= false;
-	private final UBClientPropertiesDialog	mUBClientPropertiesDialog;
+	private final UrlyBirdClientFrame	mClientFrame;
+	private final ClientModel			mClientModel;
+	private UBServer					mUBServer;
+	private String						mCurrentHotelName;
+	private String						mCurrentLocation;
+	private String						mCurrentQuery;
+	private boolean						mLocalFlag	= false;
+	private final PropertiesDialog		mUBClientPropertiesDialog;
 	
 	/**
 	 * @param frame
@@ -38,7 +38,7 @@ public class UrlyBirdClientController implements ActionListener {
 		mClientFrame.setCPActionListener(this);
 		mClientFrame.setModel(mClientModel);
 		mClientModel.notifyObservers(true);
-		mUBClientPropertiesDialog = new UBClientPropertiesDialog(mClientFrame);
+		mUBClientPropertiesDialog = new PropertiesDialog(mClientFrame, false);
 		mLocalFlag = GuiConstants.STANDALONE_MODE_FLAG.equals(clientType);
 		mClientFrame.addWindowListener(new WindowAdapter() {
 			
@@ -60,26 +60,31 @@ public class UrlyBirdClientController implements ActionListener {
 	 */
 	private void connectToServer(boolean pLocalFlag) {
 		try {
-			mUBClientPropertiesDialog.setLocal(pLocalFlag);
+			mUBClientPropertiesDialog.setLocalFlag(pLocalFlag);
 			Properties prop = mUBClientPropertiesDialog.loadProperties("suncertify.properties");
 			if (prop == null) {
 				return; // Should never occur.
 			}
 			
 			if (pLocalFlag) {
-				UBServer newServer = new UBServer(prop.getProperty("ub.dbfilepath"));
+				UBServer newServer = new UBServerImpl(prop.getProperty("dbfile"));
 				if (mUBServer != null) {
 					((UBServerImpl) mUBServer).close();
 				}
 				mUBServer = newServer;
 			} else {
-				String host = prop.getProperty("ub.serverhost");
-				String port = prop.getProperty("ub.serverport");
+				String host = prop.getProperty("serverhost");
+				String port = prop.getProperty("serverport");
 				UBServer newServer = null;
 				String name = "rmi://" + host + ":" + port + "/RemoteUBServer";
 				Remote remoteObj = Naming.lookup(name);
 				
-				mUBServer = (UBServer) remoteObj;
+				newServer = (UBServer) remoteObj;
+				
+				if (mUBServer != null && mLocalFlag) {
+					((UBServerImpl) mUBServer).close();
+				}
+				mUBServer = newServer;
 			}
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "Failed to connect to the remote server. Detials" + e.getLocalizedMessage(), "UB Message", JOptionPane.ERROR_MESSAGE);
@@ -87,21 +92,21 @@ public class UrlyBirdClientController implements ActionListener {
 	}
 	
 	/**
-	 * 
-	 */
-	public void doShowAllRooms() {
-		
-	}
-	
-	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see
-	 * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
+		
+		String action = e.getActionCommand();
+		
+	}
+	
+	/**
+	 * 
+	 */
+	public void doShowAllRooms() {
 		
 	}
 	

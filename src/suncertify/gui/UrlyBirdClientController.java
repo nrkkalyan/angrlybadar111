@@ -156,7 +156,7 @@ public class UrlyBirdClientController implements ActionListener {
 	 */
 	private void bookRoom(String pAction) {
 		// TODO Auto-generated method stub
-		
+		//
 	}
 	
 	/**

@@ -29,7 +29,7 @@ public class UrlyBirdClientMain {
 		frame.setSize(700, 700);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
-		controller.doShowAllRooms();
+		controller.showAllRooms();
 		
 	}
 	

@@ -13,17 +13,31 @@ final class GuiConstants {
 	public static final String	NETWORK_MODE_FLAG		= "rmi";
 	public static final String	APPLICATION_NAME		= "UrlyBird 1.1.1";
 	
-	public enum Commands {
+	public enum ActionCommand {
 		
-		SEARCH_ALL, SEARCH_BY_NAME_AND_LOC, BOOK_ROOM, EXIT, CONNECT_LOCAL, CONNECT_REMOTE;
+		VIEW_ALL, SEARCH_BY_NAME_AND_LOC, BOOK_ROOM, EXIT, CONNECT_LOCAL, CONNECT_REMOTE;
 		
 		/**
 		 * @param actionCommand
 		 * @return
 		 */
-		public static Commands parse(String actionCommand) {
+		public static ActionCommand parse(String actionCommand) {
 			String[] commands = actionCommand.split("=");
-			return Commands.valueOf(commands[0]);
+			return ActionCommand.valueOf(commands[0]);
+		}
+		
+		/**
+		 * @param pAction
+		 * @return
+		 */
+		public static ActionCommand getCommandByName(String action) {
+			try {
+				ActionCommand.valueOf(action);
+			} catch (Exception e) {
+				// Ignore
+			}
+			
+			return null;
 		}
 		
 	}

@@ -13,6 +13,8 @@ import java.util.Properties;
 
 import javax.swing.JOptionPane;
 
+import suncertify.gui.GuiConstants.ActionCommand;
+
 /**
  * @author Koosie
  * 
@@ -98,15 +100,82 @@ public class UrlyBirdClientController implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
 		String action = e.getActionCommand();
+		
+		ActionCommand command = ActionCommand.getCommandByName(action);
+		switch (command) {
+			case BOOK_ROOM: {
+				bookRoom(action);
+				break;
+			}
+			case CONNECT_LOCAL: {
+				new Thread() {
+					@Override
+					public void run() {
+						connect(true);
+					}
+				}.start();
+				break;
+			}
+			case CONNECT_REMOTE: {
+				new Thread() {
+					@Override
+					public void run() {
+						connect(false);
+					}
+				}.start();
+				break;
+			}
+			case VIEW_ALL: {
+				showAllRooms();
+				break;
+			}
+			case SEARCH_BY_NAME_AND_LOC: {
+				int i1 = action.indexOf(":");
+				
+				String[] aSplit = action.substring(i1 + 1).split(",");
+				String name = aSplit[0];
+				String loc = null;
+				if (aSplit.length > 1) {
+					loc = aSplit[1];
+				}
+				
+				searchByNameAndLoc(name, loc);
+				break;
+			}
+			case EXIT: {
+				System.exit(0);
+			}
+			
+		}
+		
+	}
+	
+	/**
+	 * @param pAction
+	 */
+	private void bookRoom(String pAction) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	/**
+	 * @param pName
+	 * @param pLoc
+	 */
+	private void searchByNameAndLoc(String pName, String pLoc) {
+		// TODO Auto-generated method stub
+		
+	}
+	
+	public void connect(boolean localFlag) {
 		
 	}
 	
 	/**
 	 * 
 	 */
-	public void doShowAllRooms() {
+	public void showAllRooms() {
 		
 	}
 	

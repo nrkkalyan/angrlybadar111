@@ -22,7 +22,7 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
-import suncertify.gui.GuiConstants.Commands;
+import suncertify.gui.GuiConstants.ActionCommand;
 
 /**
  * @author Koosie
@@ -48,16 +48,16 @@ public class ControlPanel extends JPanel implements ActionListener {
 		this.setLayout(new BorderLayout());
 		
 		mSearchBtn.setToolTipText("Search rooms by hotel name and/or location");
-		mSearchBtn.setActionCommand(createCommand(Commands.SEARCH_BY_NAME_AND_LOC));
+		mSearchBtn.setActionCommand(createCommand(ActionCommand.SEARCH_BY_NAME_AND_LOC));
 		mSearchBtn.addActionListener(this);
 		
 		mBookButton.setToolTipText("Book the selected room");
-		mBookButton.setActionCommand(createCommand(Commands.BOOK_ROOM));
+		mBookButton.setActionCommand(createCommand(ActionCommand.BOOK_ROOM));
 		mBookButton.addActionListener(this);
 		
 		JMenuItem exit = new JMenuItem("Exit");
 		exit.addActionListener(this);
-		exit.setActionCommand(createCommand(Commands.EXIT));
+		exit.setActionCommand(createCommand(ActionCommand.EXIT));
 		JMenu file = new JMenu("File");
 		file.add(exit);
 		mMenuBar.add(file);
@@ -114,18 +114,18 @@ public class ControlPanel extends JPanel implements ActionListener {
 		if (ae.getSource() == mSearchBtn) {
 			String hotelName = mHotelName.getText();
 			String location = mLocation.getText();
-			ae = new ActionEvent(mSearchBtn, ae.getID(), createCommand(GuiConstants.Commands.SEARCH_BY_NAME_AND_LOC, hotelName, location));
-		} else if (Commands.valueOf(ae.getActionCommand()) == Commands.EXIT) {
+			ae = new ActionEvent(mSearchBtn, ae.getID(), createCommand(GuiConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC, hotelName, location));
+		} else if (ActionCommand.valueOf(ae.getActionCommand()) == ActionCommand.EXIT) {
 			System.exit(0);
 		}
 		mActionListner.actionPerformed(ae);
 	}
 	
-	private String createCommand(Commands command) {
+	private String createCommand(ActionCommand command) {
 		return createCommand(command, null, null);
 	}
 	
-	private String createCommand(Commands command, String hotelName, String location) {
+	private String createCommand(ActionCommand command, String hotelName, String location) {
 		if (hotelName != null || location != null) {
 			return "command=" + command.name() + ";hotelname=" + hotelName + ";location=" + location;
 		}

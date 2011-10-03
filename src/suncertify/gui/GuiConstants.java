@@ -7,7 +7,7 @@ package suncertify.gui;
  * @author Koosie
  * 
  */
-final class GuiConstants {
+public final class GuiConstants {
 	public static final String	SERVER_MODE_FLAG		= "server";
 	public static final String	STANDALONE_MODE_FLAG	= "alone";
 	public static final String	NETWORK_MODE_FLAG		= "rmi";
@@ -18,28 +18,23 @@ final class GuiConstants {
 		VIEW_ALL, SEARCH_BY_NAME_AND_LOC, BOOK_ROOM, EXIT, CONNECT_LOCAL, CONNECT_REMOTE;
 		
 		/**
-		 * @param actionCommand
-		 * @return
-		 */
-		public static ActionCommand parse(String actionCommand) {
-			String[] commands = actionCommand.split("=");
-			return ActionCommand.valueOf(commands[0]);
-		}
-		
-		/**
 		 * @param pAction
 		 * @return
 		 */
 		public static ActionCommand getCommandByName(String action) {
 			try {
-				ActionCommand.valueOf(action);
+				int x = action.indexOf(":");
+				ActionCommand.valueOf(action.substring(0, x - 1));
 			} catch (Exception e) {
 				// Ignore
 			}
-			
-			return null;
+			throw new UnsupportedOperationException("Command not supported " + action);
 		}
 		
+	}
+	
+	public enum Query {
+		VIEW_BY_HOTEL_NAME_LOC, VIEW_BY_HOTEL_NAME, VIEW_BY_LOC, VIEW_ALL
 	}
 	
 }

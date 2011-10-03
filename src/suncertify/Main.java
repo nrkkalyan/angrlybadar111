@@ -1,4 +1,8 @@
-package suncertify.gui;
+package suncertify;
+
+import suncertify.gui.GuiConstants;
+import suncertify.gui.UrlyBirdClientMain;
+import suncertify.gui.UrlyBirdRMIServer;
 
 /**
  * This class is the entry point of the UrlyBird application. Use "server" in

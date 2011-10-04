@@ -27,6 +27,8 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 
+import suncertify.common.GuiConstants;
+
 /**
  * @author Koosie
  * 

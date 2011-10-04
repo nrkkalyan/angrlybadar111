@@ -1,7 +1,7 @@
 /**
  * 
  */
-package suncertify.gui;
+package suncertify.client;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,7 +13,13 @@ import java.util.Properties;
 
 import javax.swing.JOptionPane;
 
-import suncertify.gui.GuiConstants.ActionCommand;
+import suncertify.UBServer;
+import suncertify.common.GuiConstants;
+import suncertify.common.GuiConstants.ActionCommand;
+import suncertify.gui.EightDigitsTextField;
+import suncertify.gui.PropertiesDialog;
+import suncertify.gui.UrlyBirdClientFrame;
+import suncertify.server.UBServerImpl;
 
 /**
  * @author Koosie
@@ -111,7 +117,7 @@ public class UrlyBirdClientController implements ActionListener {
 				new Thread() {
 					@Override
 					public void run() {
-						connect(true);
+						connectToServer(true);
 					}
 				}.start();
 				break;
@@ -120,7 +126,7 @@ public class UrlyBirdClientController implements ActionListener {
 				new Thread() {
 					@Override
 					public void run() {
-						connect(false);
+						connectToServer(false);
 					}
 				}.start();
 				break;
@@ -152,7 +158,7 @@ public class UrlyBirdClientController implements ActionListener {
 				int choice = JOptionPane.showConfirmDialog(mClientFrame, "Do you really want to exit?", GuiConstants.APPLICATION_NAME, JOptionPane.YES_NO_OPTION);
 				if (choice == JOptionPane.YES_OPTION) {
 					if (mUBServer != null && mLocalFlag) {
-						((UCServerImpl) mUBServer).close();
+						((UBServerImpl) mUBServer).close();
 					}
 					System.exit(0);
 				}
@@ -163,9 +169,6 @@ public class UrlyBirdClientController implements ActionListener {
 		
 	}
 	
-	/**
-	 * @param pAction
-	 */
 	private void bookRoom() {
 		
 		if (mUBServer == null) {
@@ -215,10 +218,10 @@ public class UrlyBirdClientController implements ActionListener {
 	}
 	
 	/**
-	 * @param pCurrentHotelName
-	 * @param pCurrentLocation
+	 * @param pHotelName
+	 * @param pLocation
 	 */
-	private void searchByHotelNameAndLocation(String pCurrentHotelName, String pCurrentLocation) {
+	private void searchByHotelNameAndLocation(String pHotelName, String pLocation) {
 		if (mUBServer == null) {
 			JOptionPane.showMessageDialog(mClientFrame, "Please connect to a server first. ", GuiConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
 			return;
@@ -226,7 +229,7 @@ public class UrlyBirdClientController implements ActionListener {
 		
 		try {
 			String[][] data = new String[0][0];
-			data = mUBServer.searchCaterersByHotelNameAndLocation(hotelName, location);
+			data = mUBServer.searchCaterersByHotelNameAndLocation(pHotelName, pLocation);
 			mClientModel.setDisplayRows(data);
 			mClientModel.notifyObservers();
 		} catch (Exception e) {

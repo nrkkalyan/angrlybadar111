@@ -1,8 +1,9 @@
 package suncertify;
 
-import suncertify.gui.GuiConstants;
-import suncertify.gui.UrlyBirdClientMain;
-import suncertify.gui.UrlyBirdRMIServer;
+import suncertify.client.UrlyBirdClientController;
+import suncertify.common.GuiConstants;
+import suncertify.gui.UrlyBirdClientFrame;
+import suncertify.server.UrlyBirdRMIServer;
 
 /**
  * This class is the entry point of the UrlyBird application. Use "server" in
@@ -19,19 +20,31 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		if (args.length == 0) {
-			UrlyBirdClientMain.start("rmi");
-		} else if (GuiConstants.SERVER_MODE_FLAG.equalsIgnoreCase(args[0])) {
-			UrlyBirdRMIServer.start(GuiConstants.SERVER_MODE_FLAG);
-		} else if (GuiConstants.STANDALONE_MODE_FLAG.equalsIgnoreCase(args[0])) {
-			UrlyBirdClientMain.start(GuiConstants.STANDALONE_MODE_FLAG);
+			startClient(GuiConstants.NETWORK_MODE_FLAG);
+		} else if (GuiConstants.SERVER_MODE_FLAG.equals(args[0])) {
+			UrlyBirdRMIServer.start();
+		} else if (GuiConstants.STANDALONE_MODE_FLAG.equals(args[0])) {
+			startClient(GuiConstants.STANDALONE_MODE_FLAG);
 		} else {
 			usage();
 		}
 	}
 	
+	private static void startClient(final String clientType) {
+		UrlyBirdClientFrame frame = new UrlyBirdClientFrame();
+		UrlyBirdClientController controller = new UrlyBirdClientController(frame, clientType);
+		frame.setSize(700, 700);
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+		controller.showAllRooms();
+		
+	}
+	
 	private static void usage() {
-		System.err.println("Usage: java -jar runme.jar [options]\n" + "[options]:\n" + "server\t - Run in server mode.\n" + "alone\t - Run in standalone mode.\n"
-				+ "* If no mode is specified, the application will run as network client mode.\n");
+		System.err.println("Usage: java -jar runme.jar [options]\n" + //
+				"[options]:\n" + "server\t - Run in server mode.\n" + //
+				"alone\t - Run in standalone mode.\n" + //
+				"* If no mode is specified, the application will run as network client mode.\n");
 		System.exit(1);
 	}
 	

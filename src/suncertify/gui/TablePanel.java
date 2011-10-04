@@ -15,6 +15,8 @@ import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 
+import suncertify.client.ClientModel;
+
 /**
  * @author Koosie
  * 

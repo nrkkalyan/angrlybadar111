@@ -22,7 +22,8 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
-import suncertify.gui.GuiConstants.ActionCommand;
+import suncertify.common.GuiConstants;
+import suncertify.common.GuiConstants.ActionCommand;
 
 /**
  * @author Koosie

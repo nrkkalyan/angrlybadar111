@@ -1,7 +1,7 @@
 /**
  * 
  */
-package suncertify.gui;
+package suncertify.common;
 
 /**
  * @author Koosie

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package suncertify.gui;
+package suncertify.client;
 
 import java.util.Observable;
 

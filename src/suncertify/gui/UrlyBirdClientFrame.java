@@ -8,6 +8,9 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 
+import suncertify.client.ClientModel;
+import suncertify.client.UrlyBirdClientController;
+
 /**
  * This class is the main view of the application, mainly the view part of MVC
  * pattern. It displays the menubar of the application and the table with the

@@ -1,9 +1,12 @@
 package suncertify.db;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /***
@@ -78,7 +81,7 @@ public class Data implements DB {
 			throw new RecordNotFoundException("No record found for : " + recNo);
 		}
 		
-		{
+		try {
 			ras.seek(offset + recNo * recordlength);
 			byte[] ba = new byte[recordlength];
 			int noofbytesread = ras.read(ba);
@@ -89,6 +92,8 @@ public class Data implements DB {
 				throw new RecordNotFoundException("Record has been deleted : " + recNo);
 			}
 			return parseRecord(new String(ba, CHARSET));
+		} catch (IOException e) {
+			throw new RecordNotFoundException("Unable to retrieve the record : " + recNo + " : " + e.getMessage());
 		}
 		
 	}
@@ -115,9 +120,73 @@ public class Data implements DB {
 	 * @see suncertify.db.DB#update(int, java.lang.String[], long)
 	 */
 	@Override
-	public void update(int recNo, String[] data, long lockCookie) throws RecordNotFoundException, SecurityException {
-		// TODO Auto-generated method stub
+	public synchronized void update(int recNo, String[] data, long lockCookie) throws RecordNotFoundException, SecurityException {
 		
+		if (recNo < 0) {
+			throw new RecordNotFoundException("No such record : " + recNo);
+		}
+		
+		if (data == null || data.length != fieldnames.length) {
+			throw new SecurityException("Invalid Data");
+		}
+		
+		if (lockCookie == -1) {
+			throw new SecurityException("Invalid lock key");
+		}
+		
+		Long realkey = locker.getOwner(recNo);
+		if (realkey == null) {
+			throw new SecurityException("You have to lock the record first before updating it.");
+		}
+		
+		if (realkey.equals(lockCookie)) {
+			try {
+				ras.seek(offset + recNo * recordlength);
+				byte[] ba = new byte[recordlength];
+				int noofbytesread = ras.read(ba);
+				if (noofbytesread < recordlength) {
+					throw new RecordNotFoundException("No such record : " + recNo);
+				}
+				if (ba[0] == DELETEDROW_BYTE1) {
+					throw new RecordNotFoundException("This record has been deleted : " + recNo);
+				}
+				ras.seek(offset + recNo * recordlength);
+				ras.writeByte(VALIDROW_BYTE1);
+				ras.write(getByteArray(data));
+			} catch (Exception e) {
+				throw new SecurityException("Unable to update the record : " + recNo + " : " + e.getMessage());
+			}
+		} else {
+			throw new SecurityException("You do not own the lock for this record.");
+		}
+		
+	}
+	
+	/**
+	 * @param pData
+	 * @return
+	 * @throws IOException
+	 */
+	private byte[] getByteArray(String[] data) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(baos);
+		for (int i = 0; i < fieldnames.length; i++) {
+			
+			String field = data[i];
+			short flength = (fieldmap.get(fieldnames[i])).shortValue();
+			byte[] ca = new byte[flength];
+			int j = 0;
+			for (byte b : field.getBytes()) {
+				ca[j++] = b;
+			}
+			for (int x = 0; x < flength; x++) {
+				dos.write(ca[x]);
+			}
+		}
+		dos.flush();
+		dos.close();
+		byte[] ba = baos.toByteArray();
+		return ba;
 	}
 	
 	/**
@@ -126,8 +195,39 @@ public class Data implements DB {
 	 * @see suncertify.db.DB#delete(int, long)
 	 */
 	@Override
-	public void delete(int recNo, long lockCookie) throws RecordNotFoundException, SecurityException {
-		// TODO Auto-generated method stub
+	public synchronized void delete(int recNo, long lockCookie) throws RecordNotFoundException, SecurityException {
+		
+		if (recNo < 0) {
+			throw new RecordNotFoundException("No such record : " + recNo);
+		}
+		
+		if (lockCookie == -1) {
+			throw new SecurityException("Invalid lock key");
+		}
+		
+		Long realkey = locker.getOwner(recNo);
+		if (realkey == null) {
+			throw new SecurityException("You have to lock the record first before updating it.");
+		}
+		
+		if (realkey.equals(lockCookie)) {
+			try {
+				ras.seek(offset + recNo * recordlength);
+				byte[] ba = new byte[recordlength];
+				int noofbytesread = ras.read(ba);
+				if (noofbytesread < recordlength) {
+					throw new RecordNotFoundException("No such record : " + recNo);
+				}
+				if (ba[0] == DELETEDROW_BYTE1) {
+					throw new RecordNotFoundException("This record has already been deleted : " + recNo);
+				}
+				ras.seek(offset + recNo * recordlength);
+				ras.writeByte(DELETEDROW_BYTE1);
+				
+			} catch (IOException e) {
+				throw new SecurityException("Unable to delete the record : " + recNo + " : " + e.getMessage());
+			}
+		}
 		
 	}
 	
@@ -137,9 +237,49 @@ public class Data implements DB {
 	 * @see suncertify.db.DB#find(java.lang.String[])
 	 */
 	@Override
-	public int[] find(String[] criteria) {
-		// TODO Auto-generated method stub
-		return null;
+	public synchronized int[] find(String[] criteria) {
+		ArrayList<Integer> matchingIndices = new ArrayList<Integer>();
+		if (criteria == null || criteria.length != fieldnames.length) {
+			return new int[0];
+		}
+		try {
+			ras.seek(offset);
+			byte[] ba = new byte[recordlength];
+			int recno = 0;
+			while (ras.read(ba) == recordlength) {
+				String rec = new String(ba, CHARSET);
+				if (ba[0] == DELETEDROW_BYTE1) {
+					recno++;
+					continue;
+				}
+				final String[] fielddata = parseRecord(rec);
+				boolean match = true;
+				for (int i = 0; i < fieldnames.length; i++) {
+					if (criteria[i] == null) {
+						continue;
+					}
+					if (!fielddata[i].trim().matches(criteria[i])) {
+						match = false;
+						break;
+					}
+					
+				}
+				if (match) {
+					matchingIndices.add(new Integer(recno));
+				}
+				recno++;
+			}
+			
+			int noofmatches = matchingIndices.size();
+			int[] retvalue = new int[noofmatches];
+			for (int i = 0; i < noofmatches; i++) {
+				retvalue[i] = (matchingIndices.get(i)).intValue();
+			}
+			return retvalue;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		
 	}
 	
 	/**
@@ -175,4 +315,16 @@ public class Data implements DB {
 		
 	}
 	
+	private class LockManager {
+		
+		/**
+		 * @param pRecNo
+		 * @return
+		 */
+		public Long getOwner(int pRecNo) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+	}
 }

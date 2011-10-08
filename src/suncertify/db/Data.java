@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /***
  * @author Koosie
@@ -288,9 +290,45 @@ public class Data implements DB {
 	 * @see suncertify.db.DB#create(java.lang.String[])
 	 */
 	@Override
-	public int create(String[] data) throws DuplicateKeyException {
-		// TODO Auto-generated method stub
-		return 0;
+	public synchronized int create(String[] data) throws DuplicateKeyException {
+		if (data == null || data.length != fieldnames.length) {
+			throw new IllegalArgumentException("Invalid Data");
+		}
+		
+		int[] existingRecNos = find(data);
+		if (existingRecNos != null && existingRecNos.length > 0) {
+			throw new DuplicateKeyException("A record with given data already exists.");
+		}
+		try {
+			int newOrDeletedRecNo = getPositionToInsert();
+			ras.seek(offset + newOrDeletedRecNo * recordlength);
+			ras.writeByte(VALIDROW_BYTE1);
+			ras.write(getByteArray(data));
+			return newOrDeletedRecNo;
+		} catch (Exception e) {
+			throw new DuplicateKeyException("Unable to create new record : " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * @return
+	 */
+	private int getPositionToInsert() {
+		int retval = 0;
+		try {
+			ras.seek(offset);
+			byte[] ba = new byte[recordlength];
+			while (ras.read(ba) == recordlength) {
+				if (ba[0] == DELETEDROW_BYTE1) {
+					return retval;
+				}
+				retval++;
+				ba = new byte[recordlength];
+			}
+			return retval;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	/**
@@ -300,8 +338,8 @@ public class Data implements DB {
 	 */
 	@Override
 	public long lock(int recNo) throws RecordNotFoundException {
-		// TODO Auto-generated method stub
-		return 0;
+		
+		return locker.lock(recNo);
 	}
 	
 	/**
@@ -311,20 +349,114 @@ public class Data implements DB {
 	 */
 	@Override
 	public void unlock(int recNo, long cookie) throws RecordNotFoundException, SecurityException {
-		// TODO Auto-generated method stub
+		locker.unlock(recNo, cookie);
+	}
+	
+	/**
+	 * Closes the database.
+	 */
+	public void close() {
+		try {
+			this.lock(-1); // waits till all clients are done
+		} catch (RecordNotFoundException ex) {
+			Logger.getLogger(Data.class.getName()).log(Level.SEVERE, null, ex);
+		}
 		
+		synchronized (this) {
+			try {
+				this.ras.close();
+				this.locker.locks.clear();
+				
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
 	}
 	
 	private class LockManager {
 		
+		private final HashMap<Integer, Long>	locks		= new HashMap<Integer, Long>();
+		boolean									dblocked	= false;
+		long									dbkey		= -1;
+		
 		/**
-		 * @param pRecNo
+		 * @param recordNo
 		 * @return
 		 */
-		public Long getOwner(int pRecNo) {
-			// TODO Auto-generated method stub
-			return null;
+		public Long getOwner(int recordNo) {
+			return locks.get(recordNo);
+		}
+		
+		/**
+		 * @param recordNo
+		 * @return
+		 */
+		public synchronized long lock(int recordNo) {
+			if (recordNo == -1) {
+				return lockDB();
+			}
+			Long key = locks.get(recordNo);
+			if (key == null && !dblocked) {
+				key = System.nanoTime();
+				locks.put(recordNo, key);
+				return key;
+			} else {
+				while (locks.get(recordNo) != null || dblocked) {
+					try {
+						wait();
+					} catch (InterruptedException e) {
+						// Ignore
+						e.printStackTrace();
+					}
+				}
+				return lock(recordNo);
+			}
+		}
+		
+		/**
+		 * @return
+		 */
+		private synchronized long lockDB() {
+			while (dblocked || locks.size() != 0) {
+				try {
+					wait();
+				} catch (InterruptedException e) {
+					// Ignore
+					e.printStackTrace();
+				}
+			}
+			dblocked = true;
+			dbkey = System.nanoTime();
+			return dbkey;
+		}
+		
+		/**
+		 * @param recordNo
+		 * @param lockCookie
+		 */
+		public synchronized void unlock(int recNo, long cookie) throws SecurityException {
+			
+			if (recNo == -1) {
+				if (cookie != -1 && dbkey == cookie) {
+					dblocked = false;
+					notifyAll();
+					return;
+				} else {
+					throw new SecurityException("You don't own DB Lock");
+				}
+			}
+			
+			Long key = locks.get(recNo);
+			if (key != null && cookie == key) {
+				locks.remove(recNo);
+				notifyAll();
+			} else {
+				throw new SecurityException("You don't own lock for this record : " + recNo);
+			}
+			
 		}
 		
 	}
+	
 }

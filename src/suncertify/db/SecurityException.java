@@ -18,9 +18,9 @@ public class SecurityException extends Exception {
 	}
 	
 	/**
-	 * @param arg0
+	 * @param message
 	 */
-	public SecurityException(String arg0) {
-		super(arg0);
+	public SecurityException(String message) {
+		super(message);
 	}
 }

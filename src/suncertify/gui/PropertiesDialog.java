@@ -27,7 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 
-import suncertify.common.GuiConstants;
+import suncertify.common.CommonConstants;
 
 /**
  * @author Koosie
@@ -65,7 +65,7 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		mResetButton.addActionListener(this);
 		mBrowseButton.addActionListener(this);
 		initGui();
-		setTitle(GuiConstants.APPLICATION_NAME);
+		setTitle(CommonConstants.APPLICATION_NAME);
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent we) {
@@ -89,18 +89,19 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		mServerPortText.setEnabled(!mLocalFlag);
 		mFileNameSelectionText.setEnabled(mLocalFlag || mIsRmiServer);
 		mBrowseButton.setEnabled(mLocalFlag || mIsRmiServer);
+		
 		if (mIsRmiServer) {
-			mFileNameSelectionText.setText(getProperties().getProperty("dbfile", "db-1x1.db"));
-			mServerPortText.setText(getProperties().getProperty("serverport", "1099"));
+			mFileNameSelectionText.setText(getProperties().getProperty(CommonConstants.DB_FILE, "db-1x1.db"));
+			mServerPortText.setText(getProperties().getProperty(CommonConstants.SERVER_PORT, "1099"));
 		} else {
 			if (!mLocalFlag) {
-				mServerHostText.setText(getProperties().getProperty("serverhost", "localhost"));
-				mServerPortText.setText(getProperties().getProperty("serverport", "1099"));
+				mServerHostText.setText(getProperties().getProperty(CommonConstants.SERVER_HOST, "localhost"));
+				mServerPortText.setText(getProperties().getProperty(CommonConstants.SERVER_PORT, "1099"));
 				mFileNameSelectionText.setText("");
 			} else {
 				mServerHostText.setText("");
 				mServerPortText.setText("");
-				mFileNameSelectionText.setText(getProperties().getProperty("dbfile", "db-1x1.db"));
+				mFileNameSelectionText.setText(getProperties().getProperty(CommonConstants.DB_FILE, "db-1x1.db"));
 			}
 		}
 	}
@@ -253,10 +254,10 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		Object src = ae.getSource();
 		if (src == mOkButton) {
 			if (mLocalFlag) {
-				getProperties().setProperty("dbfile", mFileNameSelectionText.getText());
+				getProperties().setProperty(CommonConstants.DB_FILE, mFileNameSelectionText.getText());
 			} else {
-				getProperties().setProperty("serverhost", mServerHostText.getText());
-				getProperties().setProperty("serverport", mServerPortText.getText());
+				getProperties().setProperty(CommonConstants.SERVER_HOST, mServerHostText.getText());
+				getProperties().setProperty(CommonConstants.SERVER_PORT, mServerPortText.getText());
 			}
 			synchronized (this) {
 				this.mStatus = OK;

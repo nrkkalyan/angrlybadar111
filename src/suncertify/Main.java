@@ -1,9 +1,10 @@
 package suncertify;
 
+import suncertify.client.UBException;
 import suncertify.client.UrlyBirdClientController;
-import suncertify.common.GuiConstants;
+import suncertify.common.CommonConstants;
 import suncertify.gui.UrlyBirdClientFrame;
-import suncertify.server.UrlyBirdRMIServer;
+import suncertify.server.UBRmiServer;
 
 /**
  * This class is the entry point of the UrlyBird application. Use "server" in
@@ -19,14 +20,19 @@ public class Main {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		if (args.length == 0) {
-			startClient(GuiConstants.NETWORK_MODE_FLAG);
-		} else if (GuiConstants.SERVER_MODE_FLAG.equals(args[0])) {
-			UrlyBirdRMIServer.start();
-		} else if (GuiConstants.STANDALONE_MODE_FLAG.equals(args[0])) {
-			startClient(GuiConstants.STANDALONE_MODE_FLAG);
-		} else {
-			usage();
+		try {
+			if (args.length == 0) {
+				startClient(CommonConstants.NETWORK_MODE_FLAG);
+			} else if (CommonConstants.SERVER_MODE_FLAG.equals(args[0])) {
+				UBRmiServer.start();
+			} else if (CommonConstants.STANDALONE_MODE_FLAG.equals(args[0])) {
+				startClient(CommonConstants.STANDALONE_MODE_FLAG);
+			} else {
+				usage();
+			}
+		} catch (UBException e) {
+			e.printStackTrace();
+			System.out.println("Could not able to start application. Some error occured. Details :" + e.getMessage());
 		}
 	}
 	

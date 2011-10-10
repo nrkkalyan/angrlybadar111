@@ -22,8 +22,8 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
-import suncertify.common.GuiConstants;
-import suncertify.common.GuiConstants.ActionCommand;
+import suncertify.common.CommonConstants;
+import suncertify.common.CommonConstants.ActionCommand;
 
 /**
  * @author Koosie
@@ -115,7 +115,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 		if (ae.getSource() == mSearchBtn) {
 			String hotelName = mHotelName.getText();
 			String location = mLocation.getText();
-			ae = new ActionEvent(mSearchBtn, ae.getID(), createCommand(GuiConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC, hotelName, location));
+			ae = new ActionEvent(mSearchBtn, ae.getID(), createCommand(CommonConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC, hotelName, location));
 		} else if (ActionCommand.valueOf(ae.getActionCommand()) == ActionCommand.EXIT) {
 			System.exit(0);
 		}

@@ -6,7 +6,7 @@ package suncertify.server;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import suncertify.UBServer;
+import suncertify.UB;
 import suncertify.client.UBException;
 import suncertify.db.DB;
 import suncertify.db.Data;
@@ -17,13 +17,13 @@ import suncertify.db.SecurityException;
  * @author Koosie
  * 
  */
-public class UBServerImpl implements UBServer {
+public class UBImpl implements UB {
 	private DB	db;
 	
 	/**
 	 * @param dbfilename
 	 */
-	public UBServerImpl(String dbfilename) throws RemoteException, UBException, SecurityException {
+	public UBImpl(String dbfilename) throws RemoteException, UBException, SecurityException {
 		try {
 			db = new Data(dbfilename);
 		} catch (IOException e) {

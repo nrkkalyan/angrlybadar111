@@ -11,7 +11,7 @@ import suncertify.client.UBException;
  * @author Koosie
  * 
  */
-public interface UBServer extends java.rmi.Remote {
+public interface UB extends java.rmi.Remote {
 	
 	String[][] searchCaterersByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException;
 	

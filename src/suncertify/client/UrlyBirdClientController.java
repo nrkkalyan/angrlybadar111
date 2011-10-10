@@ -13,13 +13,13 @@ import java.util.Properties;
 
 import javax.swing.JOptionPane;
 
-import suncertify.UBServer;
-import suncertify.common.GuiConstants;
-import suncertify.common.GuiConstants.ActionCommand;
+import suncertify.UB;
+import suncertify.common.CommonConstants;
+import suncertify.common.CommonConstants.ActionCommand;
 import suncertify.gui.EightDigitsTextField;
 import suncertify.gui.PropertiesDialog;
 import suncertify.gui.UrlyBirdClientFrame;
-import suncertify.server.UBServerImpl;
+import suncertify.server.UBImpl;
 
 /**
  * @author Koosie
@@ -29,7 +29,7 @@ public class UrlyBirdClientController implements ActionListener {
 	
 	private final UrlyBirdClientFrame	mClientFrame;
 	private final ClientModel			mClientModel;
-	private UBServer					mUBServer;
+	private UB					mUBServer;
 	private String						mCurrentHotelName;
 	private String						mCurrentLocation;
 	private boolean						mLocalFlag	= false;
@@ -46,13 +46,13 @@ public class UrlyBirdClientController implements ActionListener {
 		mClientFrame.setModel(mClientModel);
 		mClientModel.notifyObservers(true);
 		mUBClientPropertiesDialog = new PropertiesDialog(mClientFrame, false);
-		mLocalFlag = GuiConstants.STANDALONE_MODE_FLAG.equals(clientType);
+		mLocalFlag = CommonConstants.STANDALONE_MODE_FLAG.equals(clientType);
 		mClientFrame.addWindowListener(new WindowAdapter() {
 			
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if (mUBServer != null && mLocalFlag) {
-					((UBServerImpl) mUBServer).close();
+					((UBImpl) mUBServer).close();
 				}
 				System.exit(0); // Normal Exit
 			}
@@ -74,22 +74,22 @@ public class UrlyBirdClientController implements ActionListener {
 			}
 			
 			if (pLocalFlag) {
-				UBServer newServer = new UBServerImpl(prop.getProperty("dbfile"));
+				UB newServer = new UBImpl(prop.getProperty(CommonConstants.DB_FILE));
 				if (mUBServer != null) {
-					((UBServerImpl) mUBServer).close();
+					((UBImpl) mUBServer).close();
 				}
 				mUBServer = newServer;
 			} else {
-				String host = prop.getProperty("serverhost");
-				String port = prop.getProperty("serverport");
-				UBServer newServer = null;
-				String name = "rmi://" + host + ":" + port + "/RemoteUBServer";
+				String host = prop.getProperty(CommonConstants.SERVER_HOST);
+				String port = prop.getProperty(CommonConstants.SERVER_PORT);
+				UB newServer = null;
+				String name = "rmi://" + host + ":" + port + CommonConstants.REMOTE_SERVER_NAME;
 				Remote remoteObj = Naming.lookup(name);
 				
-				newServer = (UBServer) remoteObj;
+				newServer = (UB) remoteObj;
 				
 				if (mUBServer != null && mLocalFlag) {
-					((UBServerImpl) mUBServer).close();
+					((UBImpl) mUBServer).close();
 				}
 				mUBServer = newServer;
 			}
@@ -155,10 +155,10 @@ public class UrlyBirdClientController implements ActionListener {
 				break;
 			}
 			case EXIT: {
-				int choice = JOptionPane.showConfirmDialog(mClientFrame, "Do you really want to exit?", GuiConstants.APPLICATION_NAME, JOptionPane.YES_NO_OPTION);
+				int choice = JOptionPane.showConfirmDialog(mClientFrame, "Do you really want to exit?", CommonConstants.APPLICATION_NAME, JOptionPane.YES_NO_OPTION);
 				if (choice == JOptionPane.YES_OPTION) {
 					if (mUBServer != null && mLocalFlag) {
-						((UBServerImpl) mUBServer).close();
+						((UBImpl) mUBServer).close();
 					}
 					System.exit(0);
 				}
@@ -172,7 +172,7 @@ public class UrlyBirdClientController implements ActionListener {
 	private void bookRoom() {
 		
 		if (mUBServer == null) {
-			JOptionPane.showMessageDialog(mClientFrame, "Please connect to the server.", GuiConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(mClientFrame, "Please connect to the server.", CommonConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		
@@ -180,24 +180,24 @@ public class UrlyBirdClientController implements ActionListener {
 		
 		int index = mClientFrame.getTablePanel().getSelectedIndex();
 		if (index == -1) {
-			JOptionPane.showMessageDialog(mClientFrame, "Please select a room first.", GuiConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(mClientFrame, "Please select a room first.", CommonConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		
 		data = mClientModel.getDisplayRows()[index];
 		
 		if (data[7] != null && data[7].trim().length() > 0) {
-			JOptionPane.showMessageDialog(mClientFrame, "Room is already booked.", GuiConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(mClientFrame, "Room is already booked.", CommonConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		
 		EightDigitsTextField customerIDTextField = new EightDigitsTextField();
 		Object[] arrrayMessage = { "Enter customer id(8 Digits)", customerIDTextField };
 		
-		int value = JOptionPane.showConfirmDialog(mClientFrame, arrrayMessage, GuiConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
+		int value = JOptionPane.showConfirmDialog(mClientFrame, arrrayMessage, CommonConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
 		if (value == 0) {
 			if (!customerIDTextField.isEditValid()) {
-				JOptionPane.showMessageDialog(mClientFrame, "Invalid Customer id.(8 digits) ", GuiConstants.APPLICATION_NAME, JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(mClientFrame, "Invalid Customer id.(8 digits) ", CommonConstants.APPLICATION_NAME, JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			
@@ -207,11 +207,11 @@ public class UrlyBirdClientController implements ActionListener {
 				if (status) {
 					searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
 				} else {
-					JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room.", GuiConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room.", CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room." + e.getLocalizedMessage(), GuiConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room." + e.getLocalizedMessage(), CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
 				searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
 			}
 		}
@@ -223,7 +223,7 @@ public class UrlyBirdClientController implements ActionListener {
 	 */
 	private void searchByHotelNameAndLocation(String pHotelName, String pLocation) {
 		if (mUBServer == null) {
-			JOptionPane.showMessageDialog(mClientFrame, "Please connect to a server first. ", GuiConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(mClientFrame, "Please connect to a server first. ", CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 		
@@ -234,7 +234,7 @@ public class UrlyBirdClientController implements ActionListener {
 			mClientModel.notifyObservers();
 		} catch (Exception e) {
 			e.printStackTrace();
-			JOptionPane.showMessageDialog(mClientFrame, "Exception occured in processing request : " + e.getMessage(), GuiConstants.APPLICATION_NAME, JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(mClientFrame, "Exception occured in processing request : " + e.getMessage(), CommonConstants.APPLICATION_NAME, JOptionPane.ERROR_MESSAGE);
 		}
 		
 	}

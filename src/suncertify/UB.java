@@ -15,5 +15,5 @@ public interface UB extends java.rmi.Remote {
 	
 	String[][] searchCaterersByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException;
 	
-	boolean bookRoom(String customerid, String[] originalData) throws RemoteException, UBException;
+	boolean bookRoom(String customerid, String[] data) throws RemoteException, UBException;
 }

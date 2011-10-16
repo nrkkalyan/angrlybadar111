@@ -29,12 +29,10 @@ public final class CommonConstants {
 		 */
 		public static ActionCommand getCommandByName(String action) {
 			try {
-				int x = action.indexOf(":");
-				ActionCommand.valueOf(action.substring(0, x - 1));
+				return ActionCommand.valueOf(action);
 			} catch (Exception e) {
-				// Ignore
+				throw new UnsupportedOperationException("Command not supported " + action);
 			}
-			throw new UnsupportedOperationException("Command not supported " + action);
 		}
 		
 	}

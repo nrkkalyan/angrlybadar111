@@ -93,7 +93,7 @@ public class TablePanel extends JPanel implements Observer {
 		@Override
 		public Object getValueAt(int row, int col) {
 			if (col == 0) {
-				return "" + row + 1;
+				return row + 1;
 			}
 			if (mDisplayRows != null && mDisplayRows.length >= row && mDisplayRows[row].length >= col) {
 				return mDisplayRows[row][col].trim();

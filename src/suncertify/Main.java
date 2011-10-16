@@ -4,7 +4,7 @@ import suncertify.client.UBException;
 import suncertify.client.UrlyBirdClientController;
 import suncertify.common.CommonConstants;
 import suncertify.gui.UrlyBirdClientFrame;
-import suncertify.server.UBRmiServer;
+import suncertify.server.UrlyBirdRmiServer;
 
 /**
  * This class is the entry point of the UrlyBird application. Use "server" in
@@ -24,7 +24,7 @@ public class Main {
 			if (args.length == 0) {
 				startClient(CommonConstants.NETWORK_MODE_FLAG);
 			} else if (CommonConstants.SERVER_MODE_FLAG.equals(args[0])) {
-				UBRmiServer.start();
+				UrlyBirdRmiServer.start();
 			} else if (CommonConstants.STANDALONE_MODE_FLAG.equals(args[0])) {
 				startClient(CommonConstants.STANDALONE_MODE_FLAG);
 			} else {

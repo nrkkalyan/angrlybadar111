@@ -128,7 +128,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 	
 	private String createCommand(ActionCommand command, String hotelName, String location) {
 		if (hotelName != null || location != null) {
-			return "command=" + command.name() + ";hotelname=" + hotelName + ";location=" + location;
+			return command.name() + ":" + hotelName + ":" + location;
 		}
 		return command.name();
 	}

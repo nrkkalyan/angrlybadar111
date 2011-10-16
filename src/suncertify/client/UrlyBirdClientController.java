@@ -19,7 +19,7 @@ import suncertify.common.CommonConstants.ActionCommand;
 import suncertify.gui.EightDigitsTextField;
 import suncertify.gui.PropertiesDialog;
 import suncertify.gui.UrlyBirdClientFrame;
-import suncertify.server.UBImpl;
+import suncertify.server.UrlyBirdImpl;
 
 /**
  * @author Koosie
@@ -29,7 +29,7 @@ public class UrlyBirdClientController implements ActionListener {
 	
 	private final UrlyBirdClientFrame	mClientFrame;
 	private final ClientModel			mClientModel;
-	private UB					mUBServer;
+	private UB							mUBServer;
 	private String						mCurrentHotelName;
 	private String						mCurrentLocation;
 	private boolean						mLocalFlag	= false;
@@ -52,7 +52,7 @@ public class UrlyBirdClientController implements ActionListener {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				if (mUBServer != null && mLocalFlag) {
-					((UBImpl) mUBServer).close();
+					((UrlyBirdImpl) mUBServer).close();
 				}
 				System.exit(0); // Normal Exit
 			}
@@ -74,9 +74,9 @@ public class UrlyBirdClientController implements ActionListener {
 			}
 			
 			if (pLocalFlag) {
-				UB newServer = new UBImpl(prop.getProperty(CommonConstants.DB_FILE));
+				UB newServer = new UrlyBirdImpl(prop.getProperty(CommonConstants.DB_FILE));
 				if (mUBServer != null) {
-					((UBImpl) mUBServer).close();
+					((UrlyBirdImpl) mUBServer).close();
 				}
 				mUBServer = newServer;
 			} else {
@@ -89,7 +89,7 @@ public class UrlyBirdClientController implements ActionListener {
 				newServer = (UB) remoteObj;
 				
 				if (mUBServer != null && mLocalFlag) {
-					((UBImpl) mUBServer).close();
+					((UrlyBirdImpl) mUBServer).close();
 				}
 				mUBServer = newServer;
 			}
@@ -106,11 +106,9 @@ public class UrlyBirdClientController implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String action = e.getActionCommand();
-		int i1 = action.indexOf(":");
-		String parameterString = action.substring(i1 + 1);
-		String[] parameters = parameterString.split(",");
+		String[] parameters = action.split(":");
 		
-		ActionCommand command = ActionCommand.getCommandByName(action);
+		ActionCommand command = ActionCommand.getCommandByName(parameters[0]);
 		switch (command) {
 		
 			case CONNECT_LOCAL: {
@@ -140,11 +138,11 @@ public class UrlyBirdClientController implements ActionListener {
 				
 				String name = null;
 				String loc = null;
-				if (parameters.length == 1) {
-					name = parameters[0];
-				} else if (parameters.length > 1) {
-					name = parameters[0];
-					loc = parameters[1];
+				if (parameters.length == 2) {
+					name = parameters[1];
+				} else if (parameters.length > 2) {
+					name = parameters[1];
+					loc = parameters[2];
 				}
 				
 				searchByHotelNameAndLocation(name, loc);
@@ -158,7 +156,7 @@ public class UrlyBirdClientController implements ActionListener {
 				int choice = JOptionPane.showConfirmDialog(mClientFrame, "Do you really want to exit?", CommonConstants.APPLICATION_NAME, JOptionPane.YES_NO_OPTION);
 				if (choice == JOptionPane.YES_OPTION) {
 					if (mUBServer != null && mLocalFlag) {
-						((UBImpl) mUBServer).close();
+						((UrlyBirdImpl) mUBServer).close();
 					}
 					System.exit(0);
 				}

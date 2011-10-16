@@ -33,8 +33,8 @@ public class Data implements DB {
 	private static final int				FIELD_NAME_BYTES		= 2;
 	/** The bytes that store the fields length */
 	private static final int				FIELD_LENGTH_BYTES		= 2;
-	private final static byte				DELETEDROW_BYTE1		= 0X1;
-	private final static byte				VALIDROW_BYTE1			= 0X0;
+	private static final byte				DELETEDROW_BYTE1		= 0X1;
+	private static final byte				VALIDROW_BYTE1			= 0X0;
 	
 	/**
 	 * This hashmap holds the lock information for records.
@@ -257,7 +257,7 @@ public class Data implements DB {
 				final String[] fielddata = parseRecord(rec);
 				boolean match = true;
 				for (int i = 0; i < fieldnames.length; i++) {
-					if (criteria[i] == null) {
+					if (criteria[i] == null || criteria[i].isEmpty()) {
 						continue;
 					}
 					if (!fielddata[i].trim().matches(criteria[i])) {

@@ -15,7 +15,7 @@ import suncertify.gui.PropertiesDialog;
  * @author Koosie
  * 
  */
-public class UBRmiServer {
+public class UrlyBirdRmiServer {
 	
 	private static final PropertiesDialog	pd	= new PropertiesDialog(null, true);
 	
@@ -34,7 +34,7 @@ public class UBRmiServer {
 			String port = props.getProperty(CommonConstants.SERVER_PORT).trim();
 			LocateRegistry.createRegistry(Integer.parseInt(port));
 			String name = "rmi://" + host + ":" + port + CommonConstants.REMOTE_SERVER_NAME;
-			UBRmiImpl theserver = new UBRmiImpl(props.getProperty(CommonConstants.DB_FILE));
+			UrlyBirdRmiImpl theserver = new UrlyBirdRmiImpl(props.getProperty(CommonConstants.DB_FILE));
 			Naming.rebind(name, theserver);
 		} catch (Exception e) {
 			e.printStackTrace();

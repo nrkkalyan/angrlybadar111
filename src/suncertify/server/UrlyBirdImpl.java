@@ -17,33 +17,22 @@ import suncertify.db.SecurityException;
  * @author Koosie
  * 
  */
-public class UBImpl implements UB {
+public class UrlyBirdImpl implements UB {
 	private DB	db;
 	
-	/**
-	 * @param dbfilename
-	 */
-	public UBImpl(String dbfilename) throws RemoteException, UBException, SecurityException {
+	public UrlyBirdImpl(String dbFileName) throws RemoteException, UBException, SecurityException {
 		try {
-			db = new Data(dbfilename);
+			db = new Data(dbFileName);
 		} catch (IOException e) {
 			throw new UBException("Unable to connect to the database. : " + e.getMessage());
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * suncertify.UBServer#searchCaterersByHotelNameAndLocation(java.lang.String
-	 * , java.lang.String)
-	 */
 	@Override
 	public String[][] searchCaterersByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException {
 		if (db == null) {
 			throw new UBException("Communication error to database. Details : Database connection is not available");
 		}
-		
 		String[] criteria = new String[] { hotelName, location, null, null, null, null, null };
 		
 		String[][] retval = null;

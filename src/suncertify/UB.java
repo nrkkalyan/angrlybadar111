@@ -13,7 +13,7 @@ import suncertify.client.UBException;
  */
 public interface UB extends java.rmi.Remote {
 	
-	String[][] searchCaterersByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException;
+	String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException;
 	
 	boolean bookRoom(String customerid, String[] data) throws RemoteException, UBException;
 }

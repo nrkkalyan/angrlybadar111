@@ -31,8 +31,8 @@ public class UrlyBirdRmiImpl extends UnicastRemoteObject implements UB {
 	}
 	
 	@Override
-	public String[][] searchCaterersByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException {
-		return mUrlyBirdImpl.searchCaterersByHotelNameAndLocation(hotelName, location);
+	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException {
+		return mUrlyBirdImpl.searchByHotelNameAndLocation(hotelName, location);
 	}
 	
 	@Override

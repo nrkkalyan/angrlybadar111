@@ -201,17 +201,12 @@ public class UrlyBirdClientController implements ActionListener {
 			
 			try {
 				String customerid = customerIDTextField.getText();
-				boolean status = mUBServer.bookRoom(customerid, data);
-				if (status) {
-					searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
-				} else {
-					JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room.", CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
-				}
+				mUBServer.bookRoom(customerid, data);
 			} catch (Exception e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room." + e.getLocalizedMessage(), CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
-				searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
 			}
+			searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
 		}
 	}
 	
@@ -227,7 +222,7 @@ public class UrlyBirdClientController implements ActionListener {
 		
 		try {
 			String[][] data = new String[0][0];
-			data = mUBServer.searchCaterersByHotelNameAndLocation(pHotelName, pLocation);
+			data = mUBServer.searchByHotelNameAndLocation(pHotelName, pLocation);
 			mClientModel.setDisplayRows(data);
 			mClientModel.notifyObservers();
 		} catch (Exception e) {

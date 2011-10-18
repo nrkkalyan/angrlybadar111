@@ -29,7 +29,7 @@ public class UrlyBirdImpl implements UB {
 	}
 	
 	@Override
-	public String[][] searchCaterersByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException {
+	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException {
 		if (db == null) {
 			throw new UBException("Communication error to database. Details : Database connection is not available");
 		}
@@ -88,18 +88,16 @@ public class UrlyBirdImpl implements UB {
 				}
 				
 				if (datachanged) {
-					throw new UBException("The caterer data was updated. Please refresh your view and try again.");
+					throw new UBException("The data was updated. Please refresh your view and try again.");
 				}
 				
 				data[6] = customerid;
 				db.update(recordNo, data, lockkey);
 				status = true;
-			} else if (data[6].trim().equals(customerid)) {
-				
+				return status;
 			} else {
 				throw new UBException("This room is already booked.");
 			}
-			return status;
 		} catch (RecordNotFoundException e) {
 			throw new UBException("Unable to book the room because it does not exist.");
 		} catch (SecurityException e) {

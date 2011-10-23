@@ -1,8 +1,7 @@
 package suncertify;
 
-import suncertify.client.UBException;
 import suncertify.client.UrlyBirdClientController;
-import suncertify.common.CommonConstants;
+import suncertify.common.CommonConstants.ApplicationMode;
 import suncertify.gui.UrlyBirdClientFrame;
 import suncertify.server.UrlyBirdRmiServer;
 
@@ -22,28 +21,32 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 			if (args.length == 0) {
-				startClient(CommonConstants.NETWORK_MODE_FLAG);
-			} else if (CommonConstants.SERVER_MODE_FLAG.equals(args[0])) {
-				UrlyBirdRmiServer.start();
-			} else if (CommonConstants.STANDALONE_MODE_FLAG.equals(args[0])) {
-				startClient(CommonConstants.STANDALONE_MODE_FLAG);
+				startClient(ApplicationMode.NETWORK_CLIENT);
+			} else if (ApplicationMode.SERVER.name().toLowerCase().equals(args[0])) {
+				startServer();
+			} else if (ApplicationMode.ALONE.name().toLowerCase().equals(args[0])) {
+				startClient(ApplicationMode.ALONE);
 			} else {
 				usage();
 			}
-		} catch (UBException e) {
-			e.printStackTrace();
-			System.out.println("Could not able to start application. Some error occured. Details :" + e.getMessage());
+		} catch (Exception e) {
+			System.err.println("Could not able to start application. Some error occured. Details :" + e.getMessage());
+			System.exit(0);
 		}
 	}
 	
-	private static void startClient(final String clientType) {
+	private static void startServer() throws Exception {
+		UrlyBirdRmiServer ubRmiServer = new UrlyBirdRmiServer();
+		ubRmiServer.start();
+	}
+	
+	private static void startClient(final ApplicationMode clientType) throws Exception {
 		UrlyBirdClientFrame frame = new UrlyBirdClientFrame();
 		UrlyBirdClientController controller = new UrlyBirdClientController(frame, clientType);
 		frame.setSize(700, 700);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		controller.showAllRooms();
-		
 	}
 	
 	private static void usage() {
@@ -51,7 +54,7 @@ public class Main {
 				"[options]:\n" + "server\t - Run in server mode.\n" + //
 				"alone\t - Run in standalone mode.\n" + //
 				"* If no mode is specified, the application will run as network client mode.\n");
-		System.exit(1);
+		System.exit(0);
 	}
 	
 }

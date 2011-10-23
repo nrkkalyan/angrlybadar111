@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
 import suncertify.UB;
 import suncertify.common.CommonConstants;
 import suncertify.common.CommonConstants.ActionCommand;
-import suncertify.gui.EightDigitsTextField;
+import suncertify.common.CommonConstants.ApplicationMode;
 import suncertify.gui.PropertiesDialog;
 import suncertify.gui.UrlyBirdClientFrame;
 import suncertify.server.UrlyBirdImpl;
@@ -33,20 +33,20 @@ public class UrlyBirdClientController implements ActionListener {
 	private String						mCurrentHotelName;
 	private String						mCurrentLocation;
 	private boolean						mLocalFlag	= false;
-	private final PropertiesDialog		mUBClientPropertiesDialog;
+	private final PropertiesDialog		mUBPropertiesDialog;
 	
 	/**
 	 * @param frame
 	 * @param clientType
 	 */
-	public UrlyBirdClientController(UrlyBirdClientFrame frame, String clientType) {
+	public UrlyBirdClientController(UrlyBirdClientFrame frame, ApplicationMode clientType) throws Exception {
 		mClientFrame = frame;
 		mClientModel = new ClientModel();
 		mClientFrame.setCPActionListener(this);
 		mClientFrame.setModel(mClientModel);
 		mClientModel.notifyObservers(true);
-		mUBClientPropertiesDialog = new PropertiesDialog(mClientFrame, false);
-		mLocalFlag = CommonConstants.STANDALONE_MODE_FLAG.equals(clientType);
+		mLocalFlag = ApplicationMode.ALONE == clientType;
+		mUBPropertiesDialog = new PropertiesDialog(mClientFrame, clientType);
 		mClientFrame.addWindowListener(new WindowAdapter() {
 			
 			@Override
@@ -65,15 +65,12 @@ public class UrlyBirdClientController implements ActionListener {
 	/**
 	 * @param localFlag
 	 */
-	private void connectToServer(boolean pLocalFlag) {
+	private void connectToServer(boolean localFlag) throws Exception {
 		try {
-			mUBClientPropertiesDialog.setLocalFlag(pLocalFlag);
-			Properties prop = mUBClientPropertiesDialog.loadProperties("suncertify.properties");
-			if (prop == null) {
-				return; // Should never occur.
-			}
+			// mUBPropertiesDialog.setLocalFlag(localFlag);
+			Properties prop = mUBPropertiesDialog.loadProperties();
 			
-			if (pLocalFlag) {
+			if (localFlag) {
 				UB newServer = new UrlyBirdImpl(prop.getProperty(CommonConstants.DB_FILE));
 				if (mUBServer != null) {
 					((UrlyBirdImpl) mUBServer).close();
@@ -85,7 +82,6 @@ public class UrlyBirdClientController implements ActionListener {
 				UB newServer = null;
 				String name = "rmi://" + host + ":" + port + CommonConstants.REMOTE_SERVER_NAME;
 				Remote remoteObj = Naming.lookup(name);
-				
 				newServer = (UB) remoteObj;
 				
 				if (mUBServer != null && mLocalFlag) {
@@ -94,7 +90,9 @@ public class UrlyBirdClientController implements ActionListener {
 				mUBServer = newServer;
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(null, "Failed to connect to the remote server. Detials" + e.getLocalizedMessage(), "UB Message", JOptionPane.ERROR_MESSAGE);
+			String message = "Failed to connect. Application will exit. Reason: " + e.getLocalizedMessage();
+			JOptionPane.showMessageDialog(null, message, "UB Message", JOptionPane.ERROR_MESSAGE);
+			throw new UBException(message);
 		}
 	}
 	
@@ -111,28 +109,6 @@ public class UrlyBirdClientController implements ActionListener {
 		ActionCommand command = ActionCommand.getCommandByName(parameters[0]);
 		switch (command) {
 		
-			case CONNECT_LOCAL: {
-				new Thread() {
-					@Override
-					public void run() {
-						connectToServer(true);
-					}
-				}.start();
-				break;
-			}
-			case CONNECT_REMOTE: {
-				new Thread() {
-					@Override
-					public void run() {
-						connectToServer(false);
-					}
-				}.start();
-				break;
-			}
-			case VIEW_ALL: {
-				showAllRooms();
-				break;
-			}
 			case SEARCH_BY_NAME_AND_LOC: {
 				// Find the parameters
 				
@@ -160,7 +136,10 @@ public class UrlyBirdClientController implements ActionListener {
 					}
 					System.exit(0);
 				}
-				
+				break;
+			}
+			default: {
+				throw new UnsupportedOperationException("Could not perform the following operation " + command);
 			}
 			
 		}
@@ -174,40 +153,47 @@ public class UrlyBirdClientController implements ActionListener {
 			return;
 		}
 		
-		String[] data = null;
-		
 		int index = mClientFrame.getTablePanel().getSelectedIndex();
 		if (index == -1) {
 			JOptionPane.showMessageDialog(mClientFrame, "Please select a room first.", CommonConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		
-		data = mClientModel.getDisplayRows()[index];
+		String[] data = mClientModel.getDisplayRows()[index];
 		
 		if (data[7] != null && data[7].trim().length() > 0) {
 			JOptionPane.showMessageDialog(mClientFrame, "Room is already booked.", CommonConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 		
-		EightDigitsTextField customerIDTextField = new EightDigitsTextField();
-		Object[] arrrayMessage = { "Enter customer id(8 Digits)", customerIDTextField };
+		String value = null;
+		do {
+			value = JOptionPane.showInputDialog("Enter customer id(8 Digits only)");
+		} while (!isCustomerIdValid(value));
 		
-		int value = JOptionPane.showConfirmDialog(mClientFrame, arrrayMessage, CommonConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
-		if (value == 0) {
-			if (!customerIDTextField.isEditValid()) {
-				JOptionPane.showMessageDialog(mClientFrame, "Invalid Customer id.(8 digits) ", CommonConstants.APPLICATION_NAME, JOptionPane.ERROR_MESSAGE);
-				return;
+		try {
+			if (value != null) {
+				mUBServer.bookRoom(value, data);
 			}
-			
-			try {
-				String customerid = customerIDTextField.getText();
-				mUBServer.bookRoom(customerid, data);
-			} catch (Exception e) {
-				e.printStackTrace();
-				JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room." + e.getLocalizedMessage(), CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
-			}
-			searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room." + e.getLocalizedMessage(), CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
 		}
+		searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
+	}
+	
+	/**
+	 * @param customerId
+	 * @return
+	 */
+	private boolean isCustomerIdValid(String customerId) {
+		if (customerId == null) {
+			return true;
+		}
+		boolean result = customerId.matches("[0-9]{8}");
+		if (!result) {
+			JOptionPane.showMessageDialog(mClientFrame, "Customer id must be 8 digits only.", CommonConstants.APPLICATION_NAME, JOptionPane.ERROR_MESSAGE);
+		}
+		return result;
 	}
 	
 	/**

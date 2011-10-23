@@ -1,25 +1,68 @@
-------------- UserGuide for the UrlyBird application ------------- 
+------------- UrlyBird 1.1 Application UserGuide ------------- 
 
--------- Content -------- 
-1. Overview
-2. Starting the client application
-3. Starting the server application
-4. Starting the stand alone application (no networking)
-5. The UrlyBirdView
+-------- Contents -------- 
+1. Overview.
+2. How to run the application.
+3. Application configuration.
+4. Starting the application in non-network mode.
+5. Starting the application as server.
+6. Starting the client application in network mode.
+7. UrlyBird Gui.
 
 
 
 -------- 1. Overview --------
 
-The UrlyBird applications supports the  customer service representatives (CSRs) by their daily work.
-It offers a simple way to list all rooms in the underlying database and allows the CSR to search for specific rooms and 
-book rooms for a customer.
+The application helps the UrlyBird customer service representatives(CSRs) to book hotel rooms for their customers. 
+CSRs can able to view the availability of rooms, name of the hotel, location and other information. 
+One can even search rooms by hotel name, location or a combination of both. 
 
-The application could be started as an client-server application (s. 2. and 3.) or as a stand-alone application without any networking (s. 4.).
+Note: The search is case sensitive 
 
 
 
--------- 2. Starting the client application --------
+-------- 2. How to run the application --------
+
+The application could be started in 2 modes from the command line.
+	Run the command:
+	java -jar runme.jar [optional <application_mode>]
+	If <application_mode> must be given, then it could be one of the following values "alone" or "server"
+		alone = Starts the application client in stand alone mode
+		server = Starts the application as server.
+		no args = Starts the application client in a network mode. Must be used in combination with the "server" mode.  
+
+
+
+-------- 3. Application Configuration --------
+The configuration information with respect to the application is persisted in suncertify.properties file.
+Any prior values in the file will be used in the application accordingly.
+Note: The configuration values is persisted and overwritten between the runs of the application.
+		
+		
+		
+-------- 4. Starting the application in non-network mode --------
+In order to start the application in stand alone mode one must run the following command in a command line
+	java -jar runme.jar alone
+	
+	This will open a dialog box with default value of "db-1x1.db" in the database file input box. 
+	If one wants to select a different file other than provided by default then they can do that with the help of browse button.
+	
+	Once the database path is provided the user must press OK which will save the database file path in the suncertify.properties file.
+	Any failure to parse the database file(i.e invalid magic code ,wrong file etc) will exit the application.
+	Otherwise the application will start by displaying a list of available rooms.
+	Please see section 7 (UrlyBird Gui) below for further information about GUI functionalities.
+	
+	Note: In this mode both the gui and the database will run in the same VM.
+	 
+
+
+-------- 5. Starting the application as server --------
+In order to start the application as server one must run the following command in the command line.
+	java -jar runme.jar server
+	
+	This will open a dialog box and will  
+
+
 
 !Important: to work with the client application u need a running instance of the server application (s. 3.)!
 
@@ -44,7 +87,7 @@ If the client can not establish a connection an error window is shown with a des
 
 
 
--------- 3. Starting the server application --------
+-------- 4. Starting the server application --------
 
 !Important the server application starts only a server, to retrieve or modify any data you need a connected instance of the client application (s. 2.)!
 
@@ -64,22 +107,8 @@ If the server is running it could be shut down by clicking the Button "Stop Serv
 
 
 
--------- 4. Starting the stand alone application --------
- 
-!Important the stand alone application is a local version of the UrlyBirdApplication. There is no networking involved and it is a single user application!
- 
-You could start the server application through the command line:
-	- open a command line
-	- go with the command line to the directory of the runme.jar file.
-	- type: java -jar runme.jar alone
 
-A dialog starts in which a could specify the database path by clicking on the button "Select". After you had chosen your UrlyBirdDatabase file you could 
-connect to with the "Connect" button.
-If you have specified a valid data file the UrlyBirdView starts (s. 5.).	  
-
-
-
--------- 4. The UrlyBirdView --------
+-------- 5. The UrlyBirdView --------
 
 The UrlyBirdView is the main gui of the UrlyBird application.
 In the center of the view is the table that displays the rooms that are stored in the database (by clicking on the button "all").
@@ -113,4 +142,4 @@ The following menu is available:
 
 
 
-			Have fun with the UrlyBird application!!!
+			Thank you!!!

@@ -42,11 +42,14 @@ public class Data implements DB {
 	private final LockManager				locker					= new LockManager();
 	
 	public Data(String dbfilename) throws IOException, SecurityException {
+		if (dbfilename == null || dbfilename.trim().isEmpty()) {
+			throw new SecurityException("Database file is required.");
+		}
 		FileInputStream fis = new FileInputStream(dbfilename);
 		DataInputStream dis = new DataInputStream(fis);
 		int magicCookie = dis.readInt();
 		if (magicCookie != DBConstants.MAGIC_COOKIE_REFERENCE) {
-			throw new SecurityException("Mismatch magic cookie in specified database file");
+			throw new SecurityException("Mismatch magic cookie in specified database file. Database file is corrupted.");
 		}
 		offset += MAGIC_COOKIE_BYTES + RECORD_LENGTH_BYTES + NUMBER_OF_FIELDS_BYTES;
 		recordlength = dis.readInt();
@@ -129,11 +132,11 @@ public class Data implements DB {
 		}
 		
 		if (data == null || data.length != fieldnames.length) {
-			throw new SecurityException("Invalid Data");
+			throw new SecurityException("Invalid Data.");
 		}
 		
 		if (lockCookie == -1) {
-			throw new SecurityException("Invalid lock key");
+			throw new SecurityException("Invalid lock key.");
 		}
 		
 		Long realkey = locker.getOwner(recNo);
@@ -159,7 +162,7 @@ public class Data implements DB {
 				throw new SecurityException("Unable to update the record : " + recNo + " : " + e.getMessage());
 			}
 		} else {
-			throw new SecurityException("You do not own the lock for this record.");
+			throw new SecurityException("Record is currently locked by another user.");
 		}
 		
 	}
@@ -204,12 +207,12 @@ public class Data implements DB {
 		}
 		
 		if (lockCookie == -1) {
-			throw new SecurityException("Invalid lock key");
+			throw new SecurityException("Invalid lock key.");
 		}
 		
 		Long realkey = locker.getOwner(recNo);
 		if (realkey == null) {
-			throw new SecurityException("You have to lock the record first before updating it.");
+			throw new SecurityException("Could not delet a unlocked record.");
 		}
 		
 		if (realkey.equals(lockCookie)) {
@@ -377,7 +380,7 @@ public class Data implements DB {
 	private class LockManager {
 		
 		private final HashMap<Integer, Long>	locks		= new HashMap<Integer, Long>();
-		boolean									dblocked	= false;
+		boolean									mDblocked	= false;
 		long									dbkey		= -1;
 		
 		/**
@@ -397,12 +400,12 @@ public class Data implements DB {
 				return lockDB();
 			}
 			Long key = locks.get(recordNo);
-			if (key == null && !dblocked) {
+			if (key == null && !mDblocked) {
 				key = System.nanoTime();
 				locks.put(recordNo, key);
 				return key;
 			} else {
-				while (locks.get(recordNo) != null || dblocked) {
+				while (locks.get(recordNo) != null || mDblocked) {
 					try {
 						wait();
 					} catch (InterruptedException e) {
@@ -418,7 +421,7 @@ public class Data implements DB {
 		 * @return
 		 */
 		private synchronized long lockDB() {
-			while (dblocked || locks.size() != 0) {
+			while (mDblocked || locks.size() != 0) {
 				try {
 					wait();
 				} catch (InterruptedException e) {
@@ -426,7 +429,7 @@ public class Data implements DB {
 					e.printStackTrace();
 				}
 			}
-			dblocked = true;
+			mDblocked = true;
 			dbkey = System.nanoTime();
 			return dbkey;
 		}
@@ -439,11 +442,11 @@ public class Data implements DB {
 			
 			if (recNo == -1) {
 				if (cookie != -1 && dbkey == cookie) {
-					dblocked = false;
+					mDblocked = false;
 					notifyAll();
 					return;
 				} else {
-					throw new SecurityException("You don't own DB Lock");
+					throw new SecurityException("Record is currently locked by another user.");
 				}
 			}
 			
@@ -452,7 +455,7 @@ public class Data implements DB {
 				locks.remove(recNo);
 				notifyAll();
 			} else {
-				throw new SecurityException("You don't own lock for this record : " + recNo);
+				throw new SecurityException("Record is currently locked by another user.");
 			}
 			
 		}

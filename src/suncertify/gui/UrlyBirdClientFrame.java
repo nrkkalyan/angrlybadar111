@@ -35,7 +35,7 @@ public class UrlyBirdClientFrame extends JFrame {
 	private final TablePanel	mTablePannel;
 	
 	public UrlyBirdClientFrame() {
-		super("UrlyBird 1.1.1 Application");
+		super("UrlyBird 1.1 Application");
 		mControlPannel = new ControlPanel();
 		mTablePannel = new TablePanel();
 		this.getContentPane().add(BorderLayout.NORTH, mControlPannel);

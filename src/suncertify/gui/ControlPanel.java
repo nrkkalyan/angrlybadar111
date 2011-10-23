@@ -116,8 +116,6 @@ public class ControlPanel extends JPanel implements ActionListener {
 			String hotelName = mHotelName.getText();
 			String location = mLocation.getText();
 			ae = new ActionEvent(mSearchBtn, ae.getID(), createCommand(CommonConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC, hotelName, location));
-		} else if (ActionCommand.valueOf(ae.getActionCommand()) == ActionCommand.EXIT) {
-			System.exit(0);
 		}
 		mActionListner.actionPerformed(ae);
 	}

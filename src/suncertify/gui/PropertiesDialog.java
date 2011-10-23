@@ -21,13 +21,13 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 
 import suncertify.common.CommonConstants;
+import suncertify.common.CommonConstants.ApplicationMode;
 
 /**
  * @author Koosie
@@ -39,24 +39,24 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 	/**
 	 * 
 	 */
-	private static final long	serialVersionUID		= 1L;
-	protected int				mStatus					= -1;
-	public static final int		OK						= 0;
-	public static final int		CANCEL					= -1;
-	private Properties			mProperties;
-	private final JButton		mOkButton				= new JButton("OK");
-	private final JButton		mCancelButton			= new JButton("Cancel");
-	private final JButton		mResetButton			= new JButton("Reset");
-	private final JButton		mBrowseButton			= new JButton("Browse");
-	private final JTextField	mFileNameSelectionText	= new JTextField("db-1x1.db");
-	private final JTextField	mServerHostText			= new JTextField("localhost");
-	private final JTextField	mServerPortText			= new JTextField("1099");
-	private final boolean		mIsRmiServer;
-	private boolean				mLocalFlag;
+	private static final long		serialVersionUID		= 1L;
+	protected int					mStatus					= -1;
+	public static final int			OK						= 0;
+	public static final int			CANCEL					= -1;
+	private Properties				mProperties;
+	private final JButton			mOkButton				= new JButton("OK");
+	private final JButton			mCancelButton			= new JButton("Cancel");
+	private final JButton			mResetButton			= new JButton("Reset");
+	private final JButton			mBrowseButton			= new JButton("Browse");
+	private final JTextField		mFileNameSelectionText	= new JTextField("db-1x1.db");
+	private final JTextField		mServerHostText			= new JTextField("localhost");
+	private final JTextField		mServerPortText			= new JTextField("1099");
 	
-	public PropertiesDialog(JFrame parentFrame, final boolean isRmiServer) {
+	private final ApplicationMode	mApplicationMode;
+	
+	public PropertiesDialog(JFrame parentFrame, final ApplicationMode applicationMode) {
 		super(parentFrame);
-		mIsRmiServer = isRmiServer;
+		mApplicationMode = applicationMode;
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setResizable(false);
 		setSize(370, 240);
@@ -65,7 +65,7 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		mResetButton.addActionListener(this);
 		mBrowseButton.addActionListener(this);
 		initGui();
-		setTitle(CommonConstants.APPLICATION_NAME);
+		setTitle(CommonConstants.APPLICATION_NAME + "Application Settings");
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent we) {
@@ -78,32 +78,49 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see suncertify.gui.PropertiesDialog#initGuiComponents()
+	/**
+	 * @param mLocalFlag
+	 * @param mIsRmiServer
+	 * @param mIsNetworkClient
 	 */
-	public void initGuiComponents() {
-		// mServerHostText.setVisible(!mIsRmiServer);
-		mServerHostText.setEnabled(!mLocalFlag);
-		mServerPortText.setEnabled(!mLocalFlag);
-		mFileNameSelectionText.setEnabled(mLocalFlag || mIsRmiServer);
-		mBrowseButton.setEnabled(mLocalFlag || mIsRmiServer);
-		
-		if (mIsRmiServer) {
-			mFileNameSelectionText.setText(getProperties().getProperty(CommonConstants.DB_FILE, "db-1x1.db"));
-			mServerPortText.setText(getProperties().getProperty(CommonConstants.SERVER_PORT, "1099"));
-		} else {
-			if (!mLocalFlag) {
-				mServerHostText.setText(getProperties().getProperty(CommonConstants.SERVER_HOST, "localhost"));
-				mServerPortText.setText(getProperties().getProperty(CommonConstants.SERVER_PORT, "1099"));
-				mFileNameSelectionText.setText("");
-			} else {
+	private void initGuiComponents() {
+		boolean standAloneFlag = false;
+		boolean networkClientFlag = false;
+		boolean serverFlag = false;
+		switch (mApplicationMode) {
+			case SERVER: {
+				serverFlag = true;
+				mFileNameSelectionText.setText(mProperties.getProperty(CommonConstants.DB_FILE, "db-1x1.db"));
+				mServerPortText.setText(mProperties.getProperty(CommonConstants.SERVER_PORT, "1099"));
+				mServerHostText.setText("");
+				break;
+			}
+			case ALONE: {
+				standAloneFlag = true;
 				mServerHostText.setText("");
 				mServerPortText.setText("");
-				mFileNameSelectionText.setText(getProperties().getProperty(CommonConstants.DB_FILE, "db-1x1.db"));
+				mFileNameSelectionText.setText(mProperties.getProperty(CommonConstants.DB_FILE, "db-1x1.db"));
+				
+				break;
 			}
+			case NETWORK_CLIENT: {
+				networkClientFlag = true;
+				mFileNameSelectionText.setText("");
+				mServerHostText.setText(mProperties.getProperty(CommonConstants.SERVER_HOST, "localhost"));
+				mServerPortText.setText(mProperties.getProperty(CommonConstants.SERVER_PORT, "1099"));
+				break;
+			}
+			
+			default: {
+				throw new UnsupportedOperationException("Unknow application mode");
+			}
+			
 		}
+		
+		mFileNameSelectionText.setEnabled(standAloneFlag || serverFlag);
+		mBrowseButton.setEnabled(standAloneFlag || serverFlag);
+		mServerPortText.setEnabled(networkClientFlag || serverFlag);
+		mServerHostText.setEnabled(networkClientFlag);
 	}
 	
 	/**
@@ -122,7 +139,7 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(5, 5, 0, 0);
 		
-		String text = "<html>Please specify or confirm the following server properties.<br><br></html>";
+		String text = "<html>Please specify connection properties for " + mApplicationMode.getValue() + ".<br><br></html>";
 		
 		this.getContentPane().add(new JLabel(text), gbc);
 		
@@ -138,16 +155,16 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		gbc.weightx = 0.0;
 		this.getContentPane().add(mBrowseButton, gbc);
 		
-		if (!mIsRmiServer) {
-			gbc.gridy = pos++;
-			this.getContentPane().add(new JLabel("Server Host"), gbc);
-			this.getContentPane().add(mServerHostText, gbc);
-		}
-		
+		// if (!mIsRmiServer) {
+		gbc.gridy = pos++;
+		this.getContentPane().add(new JLabel("Server Host"), gbc);
+		this.getContentPane().add(mServerHostText, gbc);
+		// }
+		// if (mIsRmiServer || !mLocalFlag) {
 		gbc.gridy = pos++;
 		this.getContentPane().add(new JLabel("Server port"), gbc);
 		this.getContentPane().add(mServerPortText, gbc);
-		
+		// }
 		JPanel temppanel = new JPanel();
 		GridLayout gl = new GridLayout(1, 3);
 		gl.setHgap(20);
@@ -164,7 +181,7 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		
 	}
 	
-	public int showDialog() {
+	private int showDialog() {
 		initGuiComponents();
 		setLocationRelativeTo(null);
 		setVisible(true);
@@ -172,41 +189,12 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 			try {
 				this.wait();
 			} catch (Exception e) {
+				// Ignore
 				e.printStackTrace();
 			}
 		}
 		setVisible(false);
 		return mStatus;
-	}
-	
-	/**
-	 * @param localFlag
-	 *            the localFlag to set
-	 */
-	public void setLocalFlag(boolean localFlag) {
-		this.mLocalFlag = localFlag;
-	}
-	
-	/**
-	 * @return the localFlag
-	 */
-	public boolean isLocalFlag() {
-		return mLocalFlag;
-	}
-	
-	/**
-	 * @param properties
-	 *            the properties to set
-	 */
-	public void setProperties(Properties properties) {
-		this.mProperties = properties;
-	}
-	
-	/**
-	 * @return the properties
-	 */
-	public Properties getProperties() {
-		return mProperties;
 	}
 	
 	/**
@@ -216,55 +204,51 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 	 * new values are stored back into the file. Instead of using showDialog()
 	 * directly, this method can be used to have the additional functionality of
 	 * loading the properties from a file and saving them back in the same file.
+	 * 
+	 * @throws Exception
 	 */
-	public Properties loadProperties(String fileName) {
-		Properties prop = new Properties();
-		File file = null;
-		try {
-			file = new File(fileName);
-			FileInputStream fis = new FileInputStream(file);
-			prop.load(fis);
-			fis.close();
-			
-			setProperties(prop);
-			int status = showDialog();
-			if (status == OK) {
-				file = new File(fileName);
-				FileOutputStream fos = new FileOutputStream(file);
-				prop.store(fos, "Settings Changed");
-				fos.close();
-			} else {
-				return null;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			JOptionPane.showMessageDialog(rootPane, "Error Occured :" + e.getLocalizedMessage());
+	public Properties loadProperties() throws Exception {
+		mProperties = new Properties();
+		FileInputStream fis = new FileInputStream(CommonConstants.CONFIGURATION_FILE);
+		mProperties.load(fis);
+		fis.close();
+		int status = showDialog();
+		if (status == OK) {
+			FileOutputStream fos = new FileOutputStream(CommonConstants.CONFIGURATION_FILE);
+			mProperties.store(fos, "Urlybird 1.1 Application Settings.");
+			fos.close();
+		} else {
+			System.exit(0);
 		}
-		return prop;
+		return mProperties;
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-	 */
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		Object src = ae.getSource();
+		
 		if (src == mOkButton) {
-			if (mLocalFlag) {
-				getProperties().setProperty(CommonConstants.DB_FILE, mFileNameSelectionText.getText());
-			} else {
-				getProperties().setProperty(CommonConstants.SERVER_HOST, mServerHostText.getText());
-				getProperties().setProperty(CommonConstants.SERVER_PORT, mServerPortText.getText());
+			switch (mApplicationMode) {
+				case SERVER: {
+					mProperties.setProperty(CommonConstants.DB_FILE, mFileNameSelectionText.getText());
+					mProperties.setProperty(CommonConstants.SERVER_PORT, mServerPortText.getText());
+					break;
+				}
+				case ALONE: {
+					mProperties.setProperty(CommonConstants.DB_FILE, mFileNameSelectionText.getText());
+					break;
+				}
+				case NETWORK_CLIENT: {
+					mProperties.setProperty(CommonConstants.SERVER_HOST, mServerHostText.getText());
+					mProperties.setProperty(CommonConstants.SERVER_PORT, mServerPortText.getText());
+					break;
+				}
 			}
 			synchronized (this) {
 				this.mStatus = OK;
 				this.notifyAll();
 			}
 		} else if (src == mCancelButton) {
-			System.exit(0);
 			synchronized (this) {
 				this.mStatus = CANCEL;
 				this.notifyAll();
@@ -276,8 +260,8 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		} else if (src == mBrowseButton) {
 			final JFileChooser fileChooser = new JFileChooser(".");
 			fileChooser.setFileFilter(new DBFileFilter());
-			fileChooser.setDialogTitle("Video directory locator");
-			fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+			fileChooser.setDialogTitle("Database directory locator");
+			fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			int returnValue = fileChooser.showOpenDialog(this);
 			if (returnValue == JFileChooser.APPROVE_OPTION) {
 				try {

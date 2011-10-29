@@ -60,86 +60,65 @@ In order to start the application in stand alone mode one must run the following
 In order to start the application as server one must run the following command in the command line.
 	java -jar runme.jar server
 	
-	This will open a dialog box and will  
+	This will open a dialog box where you must enter the database file location in the relative field, and the port you want the  urlybird server to run.
+	If the database file is parsed properly a dialog box should appear with a message 'UrlyBird Server started.'.
 
+	In order to stop the server you can either choose to close the window or press exit from the file menu.
 
+!Important: to work with the client application in a network mode the server application must be running!
+	
 
-!Important: to work with the client application u need a running instance of the server application (s. 3.)!
+-------- 6. Starting the client application in network mode --------
 
-There are two ways to start the client application: 
+In order to start the client application in network mode one must run the following command in the command line.
+	java -jar runme.jar
+	
+	This will open a dialog box where one muse enter the host name and port number where the server application is running(see 5.) and press OK.
+	Default values : localhost, port : 1099
+	If the connection is not established the application will display the error message and will be terminated. Corresponding stacktrace will be shown on the console. 
+	Otherwise a window showing the list of available rooms will be opened.
+	Please see section 7 (UrlyBird Gui) below for further information about GUI functionalities.
+	
 
-1. Through the command line:
-	- open a command line
-	- go with the command line to the directory of the runme.jar file.
-	- type: java -jar runme.jar
-2. By double clicking:
-	- go in your explorer to the directory of the runme.jar file
-	- double click on it.
+-------- 7. UrlyBird Gui --------
 
-Either way starts a dialog in which u could establish a connection to the server.
-To connect to the server fill the host field with the server address (for example "localhost")
-and the port field with the port number to connect to (for example "1099").
-The port text field only accepts digits.	
-
-If you filled both fields you can connect to the server by clicking the "connect" button.
-The client connects now to the server and shows you the UrlyBirdView (s. 5.).
-If the client can not establish a connection an error window is shown with a description of the problem.
-
-
-
--------- 4. Starting the server application --------
-
-!Important the server application starts only a server, to retrieve or modify any data you need a connected instance of the client application (s. 2.)!
-
-You could start the server application through the command line:
-	- open a command line
-	- go with the command line to the directory of the runme.jar file.
-	- type: java -jar runme.jar server
-
-A dialog starts in which u can configure the path of the database the server should use and the address under which the server should be started.
-	- To specify the database click on the button "Select" and choose a file with the now opened file chooser.
-	- To specify the address fill the field "Host" and "Port" (the port field only accepts digits).
-
-At the head of the dialog is a label that provides you with status information about the server.
-If you have filled all fields you could start the server with the button "Start Server".
-
-If the server is running it could be shut down by clicking the Button "Stop Server".
-
-
-
-
--------- 5. The UrlyBirdView --------
-
-The UrlyBirdView is the main gui of the UrlyBird application.
-In the center of the view is the table that displays the rooms that are stored in the database (by clicking on the button "all").
-
-The table is sortable and you could change the sequence of the columns by drag and drop.
-The following columns are displayed for every room:
-	 - "ID": an unique identifier for the room.
-	 - "Hotel Name": the name of the hotel that offers the room.
-	 - "Location": the name of the city where the hotel is located at.
-	 - "Room Size": the size of the room in persons.
-	 - "Smoking": if smoking is allowed ("Y") or disallowed ("N") in this room.
-	 - "Price": the price of the room in US Dollar $.
-	 - "Date": the occupancy of this room.
-	 - "Customer ID": the id of the customer that has booked the room.
-
-The following buttons are available:
-	 - "All": searches for all stored rooms in the database and displays them in the table.
-	 - "Find": Opens a find dialog in which u could execute a search for room which city and/or location name begins with a specified string. 
-	  			You could also select the checkbox "any" to search for any city and/or location name.
-	 - "New": Is disabled in this version. 
-	 - "Book": Opens a dialog in which a could insert the customer id (only 8 digits are allowed) of the customer that wants to book the room. 
-	 			A click on the "book" button, books the room for the customer and stores this in the database. The table is refreshed.
-	 - "Delete": Is disabled in this version. 
-	 - "Change": Is disabled in this version. 	
-	 - "Exit": Exits the application.
-
-The following menu is available:
-	- UrlyBird -> Connection: Opens a dialog that enables u to specify a new database (in the stand alone mode) or server (in the client mode) connection.
-							  If you leave the dialog without specifying a new connection the old one is used.	 		   
+	The Gui is consists of file menu, Search & Book and a Table to display the list of rooms.
+	
+	File Menu:
+		The menu bar contains only exit option. One can either close the application by selecting exit.
+	
+	Search: 
+		One can search from the available rooms to match the hotel name or location or both. 
+		The values could be provided in the respective fields.
+		
+		Note : The search is case sensitive and must exactly match the data in the record otherwise no data will be displayed.
+		
+		If no values are provided then the search will fetch all records.
+		
+	
+	Reserve:
+		One must select a record and press Book button. One must enter a 8 digit customer id in the pop up dialog while booking, otherwise the system will display error.
+		One can never able to book any room if its already booked. One can identify if the record is booked or not by looking at the customer id.
+		
+		Customer Id must have the following properties :
+			1) Must be 8 digits
+			2) No special characters.
+				
+			
+	Records:
+		The records are displayed in the table the order is as follows:
+			1) Sr. No
+			2) Hotel Name
+			3) Location
+			4) Size
+			5) Smoking
+			6) Price
+			7) Date 
+			8) CustomerId
+			
+			 		 
 
 
 
 
-			Thank you!!!
+																		Thank you!!!

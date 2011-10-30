@@ -6,7 +6,6 @@ package suncertify.server;
 import java.io.IOException;
 import java.rmi.RemoteException;
 
-import suncertify.UB;
 import suncertify.client.UBException;
 import suncertify.db.DB;
 import suncertify.db.Data;

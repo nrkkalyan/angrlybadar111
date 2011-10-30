@@ -12,7 +12,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -29,7 +28,7 @@ import suncertify.common.CommonConstants.ActionCommand;
  * @author Koosie
  * 
  */
-public class ControlPanel extends JPanel implements ActionListener {
+public class SearchAndBookPanel extends JPanel implements ActionListener {
 	
 	/**
 	 * 
@@ -44,7 +43,7 @@ public class ControlPanel extends JPanel implements ActionListener {
 	
 	private ActionListener		mActionListner;
 	
-	public ControlPanel() {
+	public SearchAndBookPanel() {
 		super();
 		this.setLayout(new BorderLayout());
 		
@@ -135,16 +134,8 @@ public class ControlPanel extends JPanel implements ActionListener {
 	 * @param actionListner
 	 *            the actionListner to set
 	 */
-	public void setCPActionListener(ActionListener actionListner) {
+	public void setActionListener(ActionListener actionListner) {
 		this.mActionListner = actionListner;
-	}
-	
-	public static void main(String[] args) {
-		ControlPanel ccp = new ControlPanel();
-		JFrame fr = new JFrame();
-		fr.setSize(500, 300);
-		fr.getContentPane().add(BorderLayout.NORTH, ccp);
-		fr.setVisible(true);
 	}
 	
 }

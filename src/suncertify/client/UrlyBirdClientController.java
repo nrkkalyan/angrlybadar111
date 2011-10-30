@@ -13,82 +13,82 @@ import java.util.Properties;
 
 import javax.swing.JOptionPane;
 
-import suncertify.UB;
 import suncertify.common.CommonConstants;
 import suncertify.common.CommonConstants.ActionCommand;
 import suncertify.common.CommonConstants.ApplicationMode;
 import suncertify.gui.PropertiesDialog;
+import suncertify.gui.SearchAndBookPanel;
 import suncertify.gui.UrlyBirdClientFrame;
+import suncertify.server.UB;
 import suncertify.server.UrlyBirdImpl;
 
 /**
- * @author Koosie
+ * <code>UrlyBirdClientController</code> is the controller of the application. All user actions are handled in this class.
+ * Depending on the {@link ApplicationMode} the appropriate implementation of {@link UB} is chosen.
+ * 
+ * @author nrkkalyan
  * 
  */
 public class UrlyBirdClientController implements ActionListener {
 	
-	private final UrlyBirdClientFrame	mClientFrame;
-	private final ClientModel			mClientModel;
-	private UB							mUBServer;
 	private String						mCurrentHotelName;
 	private String						mCurrentLocation;
-	private boolean						mLocalFlag	= false;
+	
+	private final UrlyBirdClientFrame	mClientFrame;
+	private final ClientModel			mClientModel;
+	private final UB					mUBImpl;
+	private final ApplicationMode 		mApplicationMode;
 	private final PropertiesDialog		mUBPropertiesDialog;
 	
 	/**
-	 * @param frame
-	 * @param clientType
+	 * Constructs <code>UrlyBirdClientController</code> with the {@link UrlyBirdClientFrame} and {@link ApplicationMode}.
+	 *  
+	 * @param ubClientFrame
+	 * @param applicationMode
 	 */
-	public UrlyBirdClientController(UrlyBirdClientFrame frame, ApplicationMode clientType) throws Exception {
-		mClientFrame = frame;
+	public UrlyBirdClientController(UrlyBirdClientFrame ubClientFrame, ApplicationMode applicationMode) throws Exception {
+		mClientFrame = ubClientFrame;
 		mClientModel = new ClientModel();
-		mClientFrame.setCPActionListener(this);
-		mClientFrame.setModel(mClientModel);
+		mClientModel.addObserver(mClientFrame.getTablePanel());
 		mClientModel.notifyObservers(true);
-		mLocalFlag = ApplicationMode.ALONE == clientType;
-		mUBPropertiesDialog = new PropertiesDialog(mClientFrame, clientType);
+		mApplicationMode = applicationMode;
+		mUBPropertiesDialog = new PropertiesDialog(mClientFrame, applicationMode);
 		mClientFrame.addWindowListener(new WindowAdapter() {
 			
 			@Override
 			public void windowClosing(WindowEvent e) {
-				if (mUBServer != null && mLocalFlag) {
-					((UrlyBirdImpl) mUBServer).close();
-				}
-				System.exit(0); // Normal Exit
+				closeUBImpl();
 			}
 		});
 		
-		connectToServer(mLocalFlag);
+		mUBImpl = connectToServer();
+		showAllRooms();
 		
 	}
 	
-	/**
-	 * @param localFlag
+	
+	
+	/* Display the startup screen to set the database properties.
+	 * Depending on the applicationMode the implementation of UB interface is chosen.
 	 */
-	private void connectToServer(boolean localFlag) throws Exception {
+	private UB connectToServer() throws Exception {
+		UB ubImpl = null;
 		try {
-			// mUBPropertiesDialog.setLocalFlag(localFlag);
 			Properties prop = mUBPropertiesDialog.loadProperties();
 			
-			if (localFlag) {
-				UB newServer = new UrlyBirdImpl(prop.getProperty(CommonConstants.DB_FILE));
-				if (mUBServer != null) {
-					((UrlyBirdImpl) mUBServer).close();
-				}
-				mUBServer = newServer;
-			} else {
+			if (mApplicationMode ==  ApplicationMode.ALONE) {
+				ubImpl = new UrlyBirdImpl(prop.getProperty(CommonConstants.DB_FILE));
+			} else if(mApplicationMode ==  ApplicationMode.NETWORK_CLIENT) {
 				String host = prop.getProperty(CommonConstants.SERVER_HOST);
 				String port = prop.getProperty(CommonConstants.SERVER_PORT);
-				UB newServer = null;
+				
 				String name = "rmi://" + host + ":" + port + CommonConstants.REMOTE_SERVER_NAME;
 				Remote remoteObj = Naming.lookup(name);
-				newServer = (UB) remoteObj;
-				
-				if (mUBServer != null && mLocalFlag) {
-					((UrlyBirdImpl) mUBServer).close();
-				}
-				mUBServer = newServer;
+				ubImpl = (UB) remoteObj;
+			} else{
+				throw new UnsupportedOperationException("Application mode not supported. Mode: " +mApplicationMode);
 			}
+			return ubImpl;
 		} catch (Exception e) {
 			String message = "Failed to connect. Application will exit. Reason: " + e.getLocalizedMessage();
 			JOptionPane.showMessageDialog(null, message, "UB Message", JOptionPane.ERROR_MESSAGE);
@@ -97,20 +97,20 @@ public class UrlyBirdClientController implements ActionListener {
 	}
 	
 	/**
-	 * (non-Javadoc)
-	 * 
+	 * Overrides java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent) to handle events generated in {@link SearchAndBookPanel} 
+	 * The command string is the string value of one of the following commands described in {@link ActionCommand}
+	 * @param  actionEvent
 	 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
 	 */
 	@Override
-	public void actionPerformed(ActionEvent e) {
-		String action = e.getActionCommand();
+	public void actionPerformed(ActionEvent actionEvent) {
+		String action = actionEvent.getActionCommand();
 		String[] parameters = action.split(":");
 		
 		ActionCommand command = ActionCommand.getCommandByName(parameters[0]);
 		switch (command) {
 		
 			case SEARCH_BY_NAME_AND_LOC: {
-				// Find the parameters
 				
 				String name = null;
 				String loc = null;
@@ -131,9 +131,7 @@ public class UrlyBirdClientController implements ActionListener {
 			case EXIT: {
 				int choice = JOptionPane.showConfirmDialog(mClientFrame, "Do you really want to exit?", CommonConstants.APPLICATION_NAME, JOptionPane.YES_NO_OPTION);
 				if (choice == JOptionPane.YES_OPTION) {
-					if (mUBServer != null && mLocalFlag) {
-						((UrlyBirdImpl) mUBServer).close();
-					}
+					closeUBImpl();
 					System.exit(0);
 				}
 				break;
@@ -145,10 +143,20 @@ public class UrlyBirdClientController implements ActionListener {
 		}
 		
 	}
+
+	/* Close the database when the application exit.
+	 * */
+	private void closeUBImpl() {
+		if (mUBImpl != null && mApplicationMode ==  ApplicationMode.ALONE) {
+			((UrlyBirdImpl) mUBImpl).close();
+		}
+	}
 	
+	/* Book the selected room if available.
+	 */
 	private void bookRoom() {
 		
-		if (mUBServer == null) {
+		if (mUBImpl == null) {
 			JOptionPane.showMessageDialog(mClientFrame, "Please connect to the server.", CommonConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
@@ -173,7 +181,7 @@ public class UrlyBirdClientController implements ActionListener {
 		
 		try {
 			if (value != null) {
-				mUBServer.bookRoom(value, data);
+				mUBImpl.bookRoom(value, data);
 			}
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room." + e.getLocalizedMessage(), CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
@@ -181,9 +189,11 @@ public class UrlyBirdClientController implements ActionListener {
 		searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
 	}
 	
-	/**
+	/*
+	 * Check if the entered customerId is valid
+	 * 
 	 * @param customerId
-	 * @return
+	 * @return true if the customerId is 8 digits else return false.
 	 */
 	private boolean isCustomerIdValid(String customerId) {
 		if (customerId == null) {
@@ -196,19 +206,21 @@ public class UrlyBirdClientController implements ActionListener {
 		return result;
 	}
 	
-	/**
-	 * @param pHotelName
-	 * @param pLocation
+	/*
+	 * Search the database for specific hotelName and location.
+	 * 
+	 * @param hotelName
+	 * @param location
 	 */
-	private void searchByHotelNameAndLocation(String pHotelName, String pLocation) {
-		if (mUBServer == null) {
+	private void searchByHotelNameAndLocation(String hotelName, String location) {
+		if (mUBImpl == null) {
 			JOptionPane.showMessageDialog(mClientFrame, "Please connect to a server first. ", CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 		
 		try {
 			String[][] data = new String[0][0];
-			data = mUBServer.searchByHotelNameAndLocation(pHotelName, pLocation);
+			data = mUBImpl.searchByHotelNameAndLocation(hotelName, location);
 			mClientModel.setDisplayRows(data);
 			mClientModel.notifyObservers();
 		} catch (Exception e) {
@@ -218,11 +230,10 @@ public class UrlyBirdClientController implements ActionListener {
 		
 	}
 	
-	/**
-	 * 
+	/*
+	 * Show all rooms in the database.
 	 */
-	public void showAllRooms() {
+	private void showAllRooms() {
 		searchByHotelNameAndLocation(null, null);
 	}
-	
 }

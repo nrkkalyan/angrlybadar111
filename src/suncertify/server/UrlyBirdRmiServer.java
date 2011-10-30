@@ -7,6 +7,8 @@ import java.awt.BorderLayout;
 import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.rmi.Naming;
 import java.rmi.registry.LocateRegistry;
 import java.util.Date;
@@ -34,11 +36,13 @@ public class UrlyBirdRmiServer extends JFrame implements ActionListener {
 	 * 
 	 */
 	private static final long				serialVersionUID	= 1L;
-	private static final PropertiesDialog	mUBPropertyDialog	= new PropertiesDialog(null, ApplicationMode.SERVER);
 	private static final TextArea			mTextArea			= new TextArea();
-	private static final JMenuBar			mMenuBar			= new JMenuBar();
+	private final  JMenuBar					mMenuBar			= new JMenuBar();
+	private static PropertiesDialog			mUBPropertyDialog;
+	private static UrlyBirdRmiImpl 			mUrlyBirdRmiImpl;
+	private static UrlyBirdRmiServer 		mUrlyBirdRmiServer;
 	
-	public UrlyBirdRmiServer() {
+	private UrlyBirdRmiServer() throws Exception {
 		super(CommonConstants.APPLICATION_NAME + "Server");
 		setLayout(new BorderLayout());
 		initGui();
@@ -48,6 +52,14 @@ public class UrlyBirdRmiServer extends JFrame implements ActionListener {
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		add(BorderLayout.NORTH, mMenuBar);
 		add(BorderLayout.SOUTH, mTextArea);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				log(CommonConstants.APPLICATION_NAME + "Server shutdown.");
+				mUrlyBirdRmiImpl.close();
+			}
+		});
+		
 		pack();
 	}
 	
@@ -74,9 +86,12 @@ public class UrlyBirdRmiServer extends JFrame implements ActionListener {
 	/**
 	 * @param string
 	 */
-	public void start() throws Exception {
-		Properties props = mUBPropertyDialog.loadProperties();
+	public static void start() throws Exception {
 		try {
+			mUrlyBirdRmiServer = new UrlyBirdRmiServer();
+			mUBPropertyDialog	= new PropertiesDialog(mUrlyBirdRmiServer, ApplicationMode.SERVER);
+			
+			Properties props = mUBPropertyDialog.loadProperties();
 			String host = props.getProperty(CommonConstants.SERVER_HOST).trim();
 			String port = props.getProperty(CommonConstants.SERVER_PORT).trim();
 			if (host == null || host.trim().isEmpty()) {
@@ -85,11 +100,14 @@ public class UrlyBirdRmiServer extends JFrame implements ActionListener {
 			if (port == null || port.trim().isEmpty()) {
 				throw new UBException("Port is required");
 			}
+			
 			LocateRegistry.createRegistry(Integer.parseInt(port));
 			String name = "rmi://" + host + ":" + port + CommonConstants.REMOTE_SERVER_NAME;
-			UrlyBirdRmiImpl theserver = new UrlyBirdRmiImpl(props.getProperty(CommonConstants.DB_FILE));
-			Naming.rebind(name, theserver);
-			setVisible(true);
+			mUrlyBirdRmiImpl = new UrlyBirdRmiImpl(props.getProperty(CommonConstants.DB_FILE));
+			Naming.rebind(name, mUrlyBirdRmiImpl);
+			
+			mUrlyBirdRmiServer.setVisible(true);
+			
 			log("UrlyBird Server started.");
 			log("Running on " + host + ":" + port);
 		} catch (Exception e) {
@@ -107,6 +125,7 @@ public class UrlyBirdRmiServer extends JFrame implements ActionListener {
 			int choice = JOptionPane.showConfirmDialog(null, "Do you really want to exit?", CommonConstants.APPLICATION_NAME, JOptionPane.YES_NO_OPTION);
 			if (choice == JOptionPane.YES_OPTION) {
 				log(CommonConstants.APPLICATION_NAME + "Server shutdown.");
+				mUrlyBirdRmiImpl.close();
 				System.exit(0);
 			}
 		}

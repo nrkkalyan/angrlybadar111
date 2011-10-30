@@ -6,7 +6,6 @@ package suncertify.server;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import suncertify.UB;
 import suncertify.client.UBException;
 import suncertify.db.SecurityException;
 
@@ -38,6 +37,10 @@ public class UrlyBirdRmiImpl extends UnicastRemoteObject implements UB {
 	@Override
 	public boolean bookRoom(String customerid, String[] data) throws RemoteException, UBException {
 		return mUrlyBirdImpl.bookRoom(customerid, data);
+	}
+
+	public void close() {
+		mUrlyBirdImpl.close();
 	}
 	
 }

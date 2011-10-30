@@ -371,7 +371,8 @@ public class Data implements DB {
 				this.locker.locks.clear();
 				
 			} catch (Exception e) {
-				e.printStackTrace();
+				// ignore
+				System.err.println(e.getMessage());
 			}
 			
 		}

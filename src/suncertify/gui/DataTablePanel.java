@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -21,7 +20,7 @@ import suncertify.client.ClientModel;
  * @author Koosie
  * 
  */
-public class TablePanel extends JPanel implements Observer {
+public class DataTablePanel extends JPanel implements Observer {
 	
 	/**
 	 * 
@@ -34,7 +33,7 @@ public class TablePanel extends JPanel implements Observer {
 	private final JTable		mRecordTable		= new JTable(mTableDataModel);
 	private ClientModel			mClientModel;
 	
-	public TablePanel() {
+	public DataTablePanel() {
 		setLayout(new BorderLayout());
 		mRecordTable.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH, TABLE_HIGHT));
 		mRecordTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
@@ -138,13 +137,4 @@ public class TablePanel extends JPanel implements Observer {
 		return mRecordTable.getSelectedRow();
 	}
 	
-	public static void main(String[] args) {
-		ClientModel cm = new ClientModel();
-		JFrame jf = new JFrame();
-		TablePanel cdp = new TablePanel();
-		cdp.update(cm, new Boolean(true));
-		jf.setSize(600, 400);
-		jf.getContentPane().add("Center", cdp);
-		jf.setVisible(true);
-	}
 }

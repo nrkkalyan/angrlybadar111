@@ -1,7 +1,7 @@
 /**
  * 
  */
-package suncertify;
+package suncertify.server;
 
 import java.rmi.RemoteException;
 

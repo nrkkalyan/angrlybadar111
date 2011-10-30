@@ -8,8 +8,8 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 
-import suncertify.client.ClientModel;
 import suncertify.client.UrlyBirdClientController;
+import suncertify.common.CommonConstants;
 
 /**
  * This class is the main view of the application, mainly the view part of MVC
@@ -31,26 +31,23 @@ public class UrlyBirdClientFrame extends JFrame {
 	/**
 	 * Panel that contains the menubar.
 	 * */
-	private final ControlPanel	mControlPannel;
-	private final TablePanel	mTablePannel;
+	private final SearchAndBookPanel	mControlPannel;
+	private final DataTablePanel	mTablePannel;
 	
 	public UrlyBirdClientFrame() {
-		super("UrlyBird 1.1 Application");
-		mControlPannel = new ControlPanel();
-		mTablePannel = new TablePanel();
+		super(CommonConstants.APPLICATION_NAME);
+		mControlPannel = new SearchAndBookPanel();
+		mTablePannel = new DataTablePanel();
 		this.getContentPane().add(BorderLayout.NORTH, mControlPannel);
 		this.getContentPane().add(BorderLayout.CENTER, mTablePannel);
 	}
 	
-	public void setCPActionListener(ActionListener al) {
-		mControlPannel.setCPActionListener(al);
+	public void setControlPanelActionListener(ActionListener al) {
+		mControlPannel.setActionListener(al);
 	}
 	
-	public void setModel(ClientModel cm) {
-		cm.addObserver(mTablePannel);
-	}
 	
-	public TablePanel getTablePanel() {
+	public DataTablePanel getTablePanel() {
 		return mTablePannel;
 	}
 	

@@ -139,7 +139,7 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		gbc.weightx = 1.0;
 		gbc.insets = new java.awt.Insets(5, 5, 0, 0);
 		
-		String text = "<html>Please specify connection properties for " + mApplicationMode.getValue() + ".<br><br></html>";
+		String text = "<html>Please specify connection properties for " + mApplicationMode.getDescription() + ".<br><br></html>";
 		
 		this.getContentPane().add(new JLabel(text), gbc);
 		

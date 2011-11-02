@@ -35,7 +35,7 @@ public class Data implements DB {
 	private static final int				FIELD_LENGTH_BYTES		= 2;
 	private static final byte				DELETEDROW_BYTE1		= 0X1;
 	private static final byte				VALIDROW_BYTE1			= 0X0;
-	
+	private static final int	MAGIC_COOKIE_REFERENCE	= 257;
 	/**
 	 * This hashmap holds the lock information for records.
 	 */
@@ -48,7 +48,7 @@ public class Data implements DB {
 		FileInputStream fis = new FileInputStream(dbfilename);
 		DataInputStream dis = new DataInputStream(fis);
 		int magicCookie = dis.readInt();
-		if (magicCookie != DBConstants.MAGIC_COOKIE_REFERENCE) {
+		if (magicCookie != MAGIC_COOKIE_REFERENCE) {
 			throw new SecurityException("Mismatch magic cookie in specified database file. Database file is corrupted.");
 		}
 		offset += MAGIC_COOKIE_BYTES + RECORD_LENGTH_BYTES + NUMBER_OF_FIELDS_BYTES;

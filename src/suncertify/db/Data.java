@@ -12,7 +12,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /***
- * @author Koosie
+ * This class implements the DB interface
+ * 
+ * @author nrkkalyan
  * 
  */
 public class Data implements DB {
@@ -33,19 +35,36 @@ public class Data implements DB {
 	private static final int				FIELD_NAME_BYTES		= 2;
 	/** The bytes that store the fields length */
 	private static final int				FIELD_LENGTH_BYTES		= 2;
+	/** Delete flag byte */
 	private static final byte				DELETEDROW_BYTE1		= 0X1;
+	/** Valid flag byte */
 	private static final byte				VALIDROW_BYTE1			= 0X0;
-	private static final int	MAGIC_COOKIE_REFERENCE	= 257;
+	/** Magic cookie value */
+	private static final int				MAGIC_COOKIE_REFERENCE	= 257;
 	/**
-	 * This hashmap holds the lock information for records.
+	 * Lock manager to handle the locking mechanism
 	 */
 	private final LockManager				locker					= new LockManager();
 	
-	public Data(String dbfilename) throws IOException, SecurityException {
-		if (dbfilename == null || dbfilename.trim().isEmpty()) {
-			throw new SecurityException("Database file is required.");
+	/**
+	 * Constructs the Data object. It validates the magic code and checks if the
+	 * provided database file is valid for the application.
+	 * 
+	 * @param dbFilePath
+	 *            Database file path which stores the data for the application.
+	 * @throws IOException
+	 *             If unable to read/write database file.
+	 * @throws SecurityException
+	 *             If magic code is not same as the predefined
+	 *             MAGIC_COOKIE_REFERENCE (257)
+	 * @throws NullPointerException
+	 *             If dbFilePath is null.
+	 * */
+	public Data(String dbFilePath) throws IOException, SecurityException {
+		if (dbFilePath == null) {
+			throw new NullPointerException("Database file is required.");
 		}
-		FileInputStream fis = new FileInputStream(dbfilename);
+		FileInputStream fis = new FileInputStream(dbFilePath);
 		DataInputStream dis = new DataInputStream(fis);
 		int magicCookie = dis.readInt();
 		if (magicCookie != MAGIC_COOKIE_REFERENCE) {
@@ -70,15 +89,20 @@ public class Data implements DB {
 		dis.close();
 		fis.close();
 		
-		ras = new RandomAccessFile(dbfilename, "rw");
+		ras = new RandomAccessFile(dbFilePath, "rw");
 		ras.seek(offset);
 		
 	}
 	
 	/**
-	 * (non-Javadoc)
+	 * Reads a record from the file. Returns an array where each element is a
+	 * record value corresponding to each field in the record.
 	 * 
-	 * @see suncertify.db.DB#read(int)
+	 * @param recNo
+	 * @return Returns an array, where each element is a record value
+	 *         corresponding to each field in the record.
+	 * @throws RecordNotFoundException
+	 *             If no record found for the given recNo.
 	 */
 	@Override
 	public synchronized String[] read(int recNo) throws RecordNotFoundException {
@@ -90,7 +114,7 @@ public class Data implements DB {
 			ras.seek(offset + recNo * recordlength);
 			byte[] ba = new byte[recordlength];
 			int noofbytesread = ras.read(ba);
-			if (noofbytesread < recordlength) {
+			if (noofbytesread != recordlength) {
 				throw new RecordNotFoundException("No such record found or insufficient data : " + recNo);
 			}
 			if (ba[0] == DELETEDROW_BYTE1) {
@@ -104,8 +128,11 @@ public class Data implements DB {
 	}
 	
 	/**
+	 * Converts the record string to an array, where each element is a record
+	 * value corresponding to each field in the record.
+	 * 
 	 * @param recorddata
-	 * @return
+	 * @return array of record data
 	 */
 	private String[] parseRecord(String recorddata) {
 		String[] returnValue = new String[fieldnames.length];
@@ -120,9 +147,20 @@ public class Data implements DB {
 	}
 	
 	/**
-	 * (non-Javadoc)
+	 * Modifies the fields of a record. The new value for field n appears in
+	 * data[n].
 	 * 
-	 * @see suncertify.db.DB#update(int, java.lang.String[], long)
+	 * @param recNo
+	 *            record number of the record.
+	 * @param data
+	 *            array representing the record of elements
+	 * @param lockCookie
+	 *            lock value specific to a record. Record must be locked with
+	 *            this value before it can be updated.
+	 * @throws RecordNotFoundException
+	 *             If no record is found for the recNo.
+	 * @throws SecurityException
+	 *             If the record is locked with a cookie other than lockCookie.
 	 */
 	@Override
 	public synchronized void update(int recNo, String[] data, long lockCookie) throws RecordNotFoundException, SecurityException {
@@ -149,7 +187,7 @@ public class Data implements DB {
 				ras.seek(offset + recNo * recordlength);
 				byte[] ba = new byte[recordlength];
 				int noofbytesread = ras.read(ba);
-				if (noofbytesread < recordlength) {
+				if (noofbytesread != recordlength) {
 					throw new RecordNotFoundException("No such record : " + recNo);
 				}
 				if (ba[0] == DELETEDROW_BYTE1) {
@@ -168,9 +206,13 @@ public class Data implements DB {
 	}
 	
 	/**
-	 * @param pData
-	 * @return
+	 * Converts the given String[] to byte[].
+	 * 
+	 * @param data
+	 *            array representing the data of the record.
+	 * @return byte[] of the input String[]
 	 * @throws IOException
+	 *             if an I/O error occurs.
 	 */
 	private byte[] getByteArray(String[] data) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -195,9 +237,19 @@ public class Data implements DB {
 	}
 	
 	/**
-	 * (non-Javadoc)
+	 * Deletes a record, making the record number and associated disk storage
+	 * available for reuse.
 	 * 
-	 * @see suncertify.db.DB#delete(int, long)
+	 * @param recNo
+	 * @param lockCookie
+	 * @throws RecordNotFoundException
+	 *             If the recNo is less than 0 .
+	 *             If record length is invalid in the database file.
+	 *             If the record is already deleted. 
+	 * @throws SecurityException
+	 * 			   If the lockCookie is invalid.
+	 *             If the record is locked with a cookie other than lockCookie.
+	 *             If any exception occur.
 	 */
 	@Override
 	public synchronized void delete(int recNo, long lockCookie) throws RecordNotFoundException, SecurityException {
@@ -220,7 +272,7 @@ public class Data implements DB {
 				ras.seek(offset + recNo * recordlength);
 				byte[] ba = new byte[recordlength];
 				int noofbytesread = ras.read(ba);
-				if (noofbytesread < recordlength) {
+				if (noofbytesread != recordlength) {
 					throw new RecordNotFoundException("No such record : " + recNo);
 				}
 				if (ba[0] == DELETEDROW_BYTE1) {
@@ -229,7 +281,7 @@ public class Data implements DB {
 				ras.seek(offset + recNo * recordlength);
 				ras.writeByte(DELETEDROW_BYTE1);
 				
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new SecurityException("Unable to delete the record : " + recNo + " : " + e.getMessage());
 			}
 		}

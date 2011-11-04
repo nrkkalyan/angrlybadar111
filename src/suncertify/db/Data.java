@@ -412,15 +412,15 @@ public class Data implements DB {
 	 * 
 	 * @param recNo
 	 *            record number to be locked
-	 * @return lock cookie that must be used when the record must be updated, or
-	 *         deleted.
+	 *            If recNo == -1 lock will be applied to the DB and not on record.
+	 * @return lock cookie value
 	 * @throws RecordNotFoundException
-	 *             if no record is found for the recNo
+	 *             if recNo != -1 and no record is found for the provided recNo
 	 * 
 	 */
 	@Override
 	public long lock(int recNo) throws RecordNotFoundException {
-		if (recNo > -1) {
+		if (recNo == -1) {   
 			read(recNo);
 		}
 		return locker.lock(recNo);

@@ -420,7 +420,7 @@ public class Data implements DB {
 	 */
 	@Override
 	public long lock(int recNo) throws RecordNotFoundException {
-		if (recNo == -1) {   
+		if (recNo != -1) {   
 			read(recNo);
 		}
 		return locker.lock(recNo);

@@ -3,10 +3,6 @@
  */
 package suncertify.server;
 
-import java.io.IOException;
-import java.rmi.RemoteException;
-
-import suncertify.client.UBException;
 import suncertify.db.DB;
 import suncertify.db.Data;
 import suncertify.db.RecordNotFoundException;
@@ -19,19 +15,16 @@ import suncertify.db.SecurityException;
 public class UrlyBirdImpl implements UB {
 	private DB	db;
 	
-	public UrlyBirdImpl(String dbFileName) throws RemoteException, UBException, SecurityException {
-		try {
+	public UrlyBirdImpl(String dbFileName) throws Exception, SecurityException {
 			db = new Data(dbFileName);
-		} catch (IOException e) {
-			throw new UBException("Unable to connect to the database. : " + e.getMessage());
-		}
 	}
 	
 	@Override
-	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException {
+	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException, Exception {
 		if (db == null) {
-			throw new UBException("Communication error to database. Details : Database connection is not available");
+			throw new NullPointerException("Communication error to database. Details : Database connection is not available");
 		}
+		
 		String[] criteria = new String[] { hotelName, location, null, null, null, null, null };
 		
 		String[][] retval = null;
@@ -49,9 +42,6 @@ public class UrlyBirdImpl implements UB {
 				}
 			}
 			db.unlock(-1, lockkey);
-		} catch (Exception e) {
-			throw new UBException(e.getLocalizedMessage());
-			
 		} finally {
 			try {
 				if (lockkey != null)
@@ -66,9 +56,9 @@ public class UrlyBirdImpl implements UB {
 	}
 	
 	@Override
-	public boolean bookRoom(String customerid, String[] originalData) throws RemoteException, UBException {
+	public boolean bookRoom(String customerid, String[] originalData) throws RecordNotFoundException, SecurityException, Exception {
 		if (db == null) {
-			throw new UBException("Communication error to database. Details : Database connection is not available");
+			throw new Exception("Communication error to database. Details : Database connection is not available");
 		}
 		boolean status = false;
 		Long lockkey = null;
@@ -87,7 +77,7 @@ public class UrlyBirdImpl implements UB {
 				}
 				
 				if (datachanged) {
-					throw new UBException("The data was updated. Please refresh your view and try again.");
+					throw new Exception("The data was updated. Please refresh your view and try again.");
 				}
 				
 				data[6] = customerid;
@@ -95,12 +85,8 @@ public class UrlyBirdImpl implements UB {
 				status = true;
 				return status;
 			} else {
-				throw new UBException("This room is already booked.");
+				throw new Exception("This room is already booked.");
 			}
-		} catch (RecordNotFoundException e) {
-			throw new UBException("Unable to book the room because it does not exist.");
-		} catch (SecurityException e) {
-			throw new UBException("Unable to book the room. Details :" + e.getLocalizedMessage());
 		} finally {
 			try {
 				if (lockkey != null && recordNo != null) {

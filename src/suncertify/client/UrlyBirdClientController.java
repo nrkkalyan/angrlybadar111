@@ -90,9 +90,9 @@ public class UrlyBirdClientController implements ActionListener {
 			}
 			return ubImpl;
 		} catch (Exception e) {
-			String message = "Failed to connect. Application will exit. Reason: " + e.getLocalizedMessage();
+			String message = "Failed to connect. Application will exit. Reason: " + e.getMessage();
 			JOptionPane.showMessageDialog(null, message, "UB Message", JOptionPane.ERROR_MESSAGE);
-			throw new UBException(message);
+			throw new Exception(message);
 		}
 	}
 	
@@ -115,10 +115,10 @@ public class UrlyBirdClientController implements ActionListener {
 				String name = null;
 				String loc = null;
 				if (parameters.length == 2) {
-					name = parameters[1];
+					name = (parameters[1] != null && !parameters[1].isEmpty())? parameters[1]:null;
 				} else if (parameters.length > 2) {
-					name = parameters[1];
-					loc = parameters[2];
+					name = (parameters[1] != null && !parameters[1].isEmpty())? parameters[1]:null;
+					loc  = (parameters[2] != null && !parameters[2].isEmpty())? parameters[2]:null;
 				}
 				
 				searchByHotelNameAndLocation(name, loc);
@@ -184,7 +184,7 @@ public class UrlyBirdClientController implements ActionListener {
 				mUBImpl.bookRoom(value, data);
 			}
 		} catch (Exception e) {
-			JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room." + e.getLocalizedMessage(), CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(mClientFrame, "Unable to book the room." + e.getMessage(), CommonConstants.APPLICATION_NAME, JOptionPane.WARNING_MESSAGE);
 		}
 		searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
 	}
@@ -224,7 +224,6 @@ public class UrlyBirdClientController implements ActionListener {
 			mClientModel.setDisplayRows(data);
 			mClientModel.notifyObservers();
 		} catch (Exception e) {
-			e.printStackTrace();
 			JOptionPane.showMessageDialog(mClientFrame, "Exception occured in processing request : " + e.getMessage(), CommonConstants.APPLICATION_NAME, JOptionPane.ERROR_MESSAGE);
 		}
 		

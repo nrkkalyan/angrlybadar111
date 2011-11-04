@@ -121,7 +121,7 @@ public class Data implements DB {
 				throw new RecordNotFoundException("Record has been deleted : " + recNo);
 			}
 			return parseRecord(new String(ba, CHARSET));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RecordNotFoundException("Unable to retrieve the record : " + recNo + " : " + e.getMessage());
 		}
 		
@@ -243,13 +243,11 @@ public class Data implements DB {
 	 * @param recNo
 	 * @param lockCookie
 	 * @throws RecordNotFoundException
-	 *             If the recNo is less than 0 .
-	 *             If record length is invalid in the database file.
-	 *             If the record is already deleted. 
+	 *             If the recNo is less than 0 . If record length is invalid in
+	 *             the database file. If the record is already deleted.
 	 * @throws SecurityException
-	 * 			   If the lockCookie is invalid.
-	 *             If the record is locked with a cookie other than lockCookie.
-	 *             If any exception occur.
+	 *             If the lockCookie is invalid. If the record is locked with a
+	 *             cookie other than lockCookie. If any exception occur.
 	 */
 	@Override
 	public synchronized void delete(int recNo, long lockCookie) throws RecordNotFoundException, SecurityException {
@@ -289,9 +287,19 @@ public class Data implements DB {
 	}
 	
 	/**
-	 * (non-Javadoc)
+	 * Returns an array of record numbers that match the specified criteria.
+	 * Field n in the database file is described by criteria[n]. A null value in
+	 * criteria[n] matches any field value. A non-null value in criteria[n]
+	 * matches any field value that exactly match with criteria[n]. (For
+	 * example, "Fred" matches "Fred" but not "Freddy".)
 	 * 
-	 * @see suncertify.db.DB#find(java.lang.String[])
+	 * @param criteria
+	 *            to find in the database
+	 * @return Returns an array of record numbers that match the specified
+	 *         criteria.
+	 * 
+	 * @throws RuntimeException
+	 *             if case of any exceptions raised
 	 */
 	@Override
 	public synchronized int[] find(String[] criteria) {
@@ -312,7 +320,7 @@ public class Data implements DB {
 				final String[] fielddata = parseRecord(rec);
 				boolean match = true;
 				for (int i = 0; i < fieldnames.length; i++) {
-					if (criteria[i] == null || criteria[i].isEmpty()) {
+					if (criteria[i] == null) {
 						continue;
 					}
 					if (!fielddata[i].trim().matches(criteria[i])) {
@@ -333,16 +341,23 @@ public class Data implements DB {
 				retvalue[i] = (matchingIndices.get(i)).intValue();
 			}
 			return retvalue;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		
 	}
 	
 	/**
-	 * (non-Javadoc)
+	 * Creates a new record in the database (possibly reusing a deleted entry).
+	 * Inserts the given data
 	 * 
-	 * @see suncertify.db.DB#create(java.lang.String[])
+	 * @param data
+	 *            to insert into the database
+	 * @return the record number of the new record.
+	 * @throws DuplicateKeyException
+	 *             If exactly matching record already exists in the database.
+	 * @throws RuntimeException
+	 *             If any exception occured
 	 */
 	@Override
 	public synchronized int create(String[] data) throws DuplicateKeyException {
@@ -361,12 +376,15 @@ public class Data implements DB {
 			ras.write(getByteArray(data));
 			return newOrDeletedRecNo;
 		} catch (Exception e) {
-			throw new DuplicateKeyException("Unable to create new record : " + e.getMessage());
+			throw new RuntimeException("Unable to create new record : " + e.getMessage());
 		}
 	}
 	
 	/**
-	 * @return
+	 * Find the position to insert in the database.
+	 * 
+	 * @return if any deleted position available otherwise return a new
+	 *         position.
 	 */
 	private int getPositionToInsert() {
 		int retval = 0;
@@ -387,13 +405,24 @@ public class Data implements DB {
 	}
 	
 	/**
-	 * (non-Javadoc)
+	 * Locks a record so that it can only be updated or deleted by this client.
+	 * If the specified record is already locked by a different client, the
+	 * current thread gives up the CPU and consumes no CPU cycles until the
+	 * record is unlocked.
 	 * 
-	 * @see suncertify.db.DB#lock(int)
+	 * @param recNo
+	 *            record number to be locked
+	 * @return lock cookie that must be used when the record must be updated, or
+	 *         deleted.
+	 * @throws RecordNotFoundException
+	 *             if no record is found for the recNo
+	 * 
 	 */
 	@Override
 	public long lock(int recNo) throws RecordNotFoundException {
-		
+		if (recNo > -1) {
+			read(recNo);
+		}
 		return locker.lock(recNo);
 	}
 	

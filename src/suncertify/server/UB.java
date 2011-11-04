@@ -3,9 +3,8 @@
  */
 package suncertify.server;
 
-import java.rmi.RemoteException;
-
-import suncertify.client.UBException;
+import suncertify.db.RecordNotFoundException;
+import suncertify.db.SecurityException;
 
 /**
  * @author Koosie
@@ -13,7 +12,7 @@ import suncertify.client.UBException;
  */
 public interface UB extends java.rmi.Remote {
 	
-	String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RemoteException, UBException;
+	String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException,SecurityException, Exception;
 	
-	boolean bookRoom(String customerid, String[] data) throws RemoteException, UBException;
+	boolean bookRoom(String customerid, String[] data) throws RecordNotFoundException,SecurityException, Exception;
 }

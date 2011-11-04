@@ -20,7 +20,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 
-import suncertify.client.UBException;
 import suncertify.common.CommonConstants;
 import suncertify.common.CommonConstants.ActionCommand;
 import suncertify.common.CommonConstants.ApplicationMode;
@@ -95,10 +94,10 @@ public class UrlyBirdRmiServer extends JFrame implements ActionListener {
 			String host = props.getProperty(CommonConstants.SERVER_HOST).trim();
 			String port = props.getProperty(CommonConstants.SERVER_PORT).trim();
 			if (host == null || host.trim().isEmpty()) {
-				throw new UBException("Host is required.");
+				throw new IllegalArgumentException("Host is required.");
 			}
 			if (port == null || port.trim().isEmpty()) {
-				throw new UBException("Port is required");
+				throw new IllegalArgumentException("Port is required");
 			}
 			
 			LocateRegistry.createRegistry(Integer.parseInt(port));
@@ -113,7 +112,7 @@ public class UrlyBirdRmiServer extends JFrame implements ActionListener {
 		} catch (Exception e) {
 			String message = "Could not able to start RMI server. Some error occured. Details :" + e.getMessage();
 			JOptionPane.showMessageDialog(null, message, "UB Message", JOptionPane.ERROR_MESSAGE);
-			throw new UBException(message);
+			throw new Exception(message);
 		}
 	}
 	

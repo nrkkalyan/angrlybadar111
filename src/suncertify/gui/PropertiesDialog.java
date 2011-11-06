@@ -190,7 +190,7 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 				this.wait();
 			} catch (Exception e) {
 				// Ignore
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 			}
 		}
 		setVisible(false);

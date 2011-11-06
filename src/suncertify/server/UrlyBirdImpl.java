@@ -47,7 +47,7 @@ public class UrlyBirdImpl implements UB {
 				if (lockkey != null)
 					db.unlock(-1, lockkey);
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 				// Ignore
 			}
 		}
@@ -93,8 +93,8 @@ public class UrlyBirdImpl implements UB {
 					db.unlock(recordNo, lockkey);
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
 				// Ignore
+				System.err.println(e.getMessage());
 			}
 		}
 	}

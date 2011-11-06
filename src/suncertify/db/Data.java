@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /***
  * This class implements the DB interface
@@ -177,12 +175,12 @@ public class Data implements DB {
 			throw new SecurityException("Invalid lock key.");
 		}
 		
-		Long realkey = locker.getOwner(recNo);
-		if (realkey == null) {
+		Long lockCookieValue = locker.getOwner(recNo);
+		if (lockCookieValue == null) {
 			throw new SecurityException("You have to lock the record first before updating it.");
 		}
 		
-		if (realkey.equals(lockCookie)) {
+		if (lockCookieValue.equals(lockCookie)) {
 			try {
 				ras.seek(offset + recNo * recordlength);
 				byte[] ba = new byte[recordlength];
@@ -260,12 +258,12 @@ public class Data implements DB {
 			throw new SecurityException("Invalid lock key.");
 		}
 		
-		Long realkey = locker.getOwner(recNo);
-		if (realkey == null) {
+		Long lockCookieValue = locker.getOwner(recNo);
+		if (lockCookieValue == null) {
 			throw new SecurityException("Could not delet a unlocked record.");
 		}
 		
-		if (realkey.equals(lockCookie)) {
+		if (lockCookieValue.equals(lockCookie)) {
 			try {
 				ras.seek(offset + recNo * recordlength);
 				byte[] ba = new byte[recordlength];
@@ -411,46 +409,61 @@ public class Data implements DB {
 	 * record is unlocked.
 	 * 
 	 * @param recNo
-	 *            record number to be locked
-	 *            If recNo == -1 lock will be applied to the DB and not on record.
+	 *            record number to be locked If recNo == -1 lock will be applied
+	 *            to the DB and not on record.
 	 * @return lock cookie value
 	 * @throws RecordNotFoundException
-	 *             if recNo != -1 and no record is found for the provided recNo
+	 *             if recNo != -1 and record is not found in the database for
+	 *             the provided recNo
 	 * 
 	 */
 	@Override
 	public long lock(int recNo) throws RecordNotFoundException {
-		if (recNo != -1) {   
+		if (recNo != -1) {
 			read(recNo);
 		}
 		return locker.lock(recNo);
 	}
 	
 	/**
-	 * (non-Javadoc)
+	 * Releases the lock on a record. Cookie must be the cookie returned when
+	 * the record was locked; otherwise throws SecurityException.
 	 * 
-	 * @see suncertify.db.DB#unlock(int, long)
+	 * @param recNo
+	 *            record number
+	 * @param cookie
+	 *            lock cookie value
+	 * @throws RecordNotFoundException
+	 *             if recNo != -1 and record is not found in the database for
+	 *             the provided recNo
+	 * @throws SecurityException
+	 *             If the record is currently locked by a different user or the
+	 *             record is not locked.
 	 */
 	@Override
 	public void unlock(int recNo, long cookie) throws RecordNotFoundException, SecurityException {
+		if (recNo != -1) {
+			read(recNo);
+		}
 		locker.unlock(recNo, cookie);
 	}
 	
 	/**
-	 * Closes the database.
+	 * Closes the database and waits till all clients are done. Clears all the
+	 * locks for the records. Ignore any exception caused in this method.
+	 * 
 	 */
 	public void close() {
 		try {
 			this.lock(-1); // waits till all clients are done
-		} catch (RecordNotFoundException ex) {
-			Logger.getLogger(Data.class.getName()).log(Level.SEVERE, null, ex);
+		} catch (RecordNotFoundException e) {
+			System.err.println(e.getMessage());
 		}
 		
 		synchronized (this) {
 			try {
 				this.ras.close();
-				this.locker.locks.clear();
-				
+				this.locker.locksMap.clear();
 			} catch (Exception e) {
 				// ignore
 				System.err.println(e.getMessage());
@@ -459,82 +472,108 @@ public class Data implements DB {
 		}
 	}
 	
+	/**
+	 * Private inner class to manage the records and its respective lock cookie
+	 * value. The locks are maintained in a HashMap where the record number is
+	 * the key and the lock cookie value is the value.
+	 */
 	private class LockManager {
 		
-		private final HashMap<Integer, Long>	locks		= new HashMap<Integer, Long>();
-		boolean									mDblocked	= false;
-		long									dbkey		= -1;
+		private final HashMap<Integer, Long>	locksMap			= new HashMap<Integer, Long>();
+		boolean									mDblocked			= false;
+		long									mDbLockCookieValue	= -1;
 		
 		/**
-		 * @param recordNo
-		 * @return
+		 * Returns the lock cookie value for that recNo from the map.
+		 * 
+		 * @param recNo
+		 *            Record number
+		 * @return Lock cookie value for the given recNo
 		 */
-		public Long getOwner(int recordNo) {
-			return locks.get(recordNo);
+		public Long getOwner(int recNo) {
+			return locksMap.get(recNo);
 		}
 		
 		/**
-		 * @param recordNo
-		 * @return
+		 * Returns a lock cookie value for the recNo. If the record is
+		 * already locked by a different user then it wait till the record is
+		 * available to lock.
+		 * 
+		 * @param recNo
+		 *            Record number to be locked.
+		 * @return lock cookie value
 		 */
-		public synchronized long lock(int recordNo) {
-			if (recordNo == -1) {
+		public synchronized long lock(int recNo) {
+			if (recNo == -1) {
 				return lockDB();
 			}
-			Long key = locks.get(recordNo);
-			if (key == null && !mDblocked) {
-				key = System.nanoTime();
-				locks.put(recordNo, key);
-				return key;
+			Long lockCookieValue = locksMap.get(recNo);
+			if (lockCookieValue == null && !mDblocked) {
+				lockCookieValue = System.nanoTime();
+				locksMap.put(recNo, lockCookieValue);
+				return lockCookieValue;
 			} else {
-				while (locks.get(recordNo) != null || mDblocked) {
+				while (locksMap.get(recNo) != null || mDblocked) {
 					try {
 						wait();
 					} catch (InterruptedException e) {
 						// Ignore
-						e.printStackTrace();
+						System.err.println(e.getMessage());
 					}
 				}
-				return lock(recordNo);
+				return lock(recNo);
 			}
 		}
 		
 		/**
-		 * @return
+		 * Lock the DB for a particular client. Wait if the DB is currently
+		 * locked or any entries are currently locked. This method will mark DB
+		 * locked flag as true
+		 * 
+		 * @return DB lock cookie value.
 		 */
 		private synchronized long lockDB() {
-			while (mDblocked || locks.size() != 0) {
+			while (mDblocked || locksMap.size() != 0) {
 				try {
 					wait();
 				} catch (InterruptedException e) {
 					// Ignore
-					e.printStackTrace();
+					System.err.println(e.getMessage());
 				}
 			}
 			mDblocked = true;
-			dbkey = System.nanoTime();
-			return dbkey;
+			mDbLockCookieValue = System.nanoTime();
+			return mDbLockCookieValue;
 		}
 		
 		/**
-		 * @param recordNo
+		 * Unlock the record. i.e Removes the lockCookieValue from locksMap for the given recNo.
+		 * 
+		 * @param recNo 
+		 * 			   Record number
 		 * @param lockCookie
+		 *             Lock cookie value if the given lockCookie is same as the lockCookieValue for the recNo in the locksMap
+		 * @throws SecurityException
+		 *             If the record is currently not locked. 
+		 *             If the record is locked by any other user.
 		 */
-		public synchronized void unlock(int recNo, long cookie) throws SecurityException {
+		public synchronized void unlock(int recNo, long lockCookie) throws SecurityException {
 			
 			if (recNo == -1) {
-				if (cookie != -1 && dbkey == cookie) {
+				if (lockCookie != -1 && mDbLockCookieValue == lockCookie) {
 					mDblocked = false;
 					notifyAll();
 					return;
 				} else {
-					throw new SecurityException("Record is currently locked by another user.");
+					throw new SecurityException("DB is currently locked by another user.");
 				}
 			}
 			
-			Long key = locks.get(recNo);
-			if (key != null && cookie == key) {
-				locks.remove(recNo);
+			Long lockCookieValue = locksMap.get(recNo);
+			if (lockCookieValue == null) {
+				throw new SecurityException("Record is not locked.");
+			} else if (lockCookie == lockCookieValue) {
+				locksMap.remove(recNo);
 				notifyAll();
 			} else {
 				throw new SecurityException("Record is currently locked by another user.");

@@ -1,7 +1,9 @@
 package suncertify.db;
 
 /**
- * @author Koosie
+ * This interface is provided as a part of Java Developer Assignment 310-252A.
+ * 
+ * @author nrkkalyan
  * 
  */
 public interface DB {

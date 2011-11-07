@@ -456,7 +456,7 @@ public class Data implements DB {
 	public void close() {
 		try {
 			this.lock(-1); // waits till all clients are done
-		} catch (RecordNotFoundException e) {
+		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
 		

@@ -495,9 +495,9 @@ public class Data implements DB {
 		}
 		
 		/**
-		 * Returns a lock cookie value for the recNo. If the record is
-		 * already locked by a different user then it wait till the record is
-		 * available to lock.
+		 * Returns a lock cookie value for the recNo. If the record is already
+		 * locked by a different user then it wait till the record is available
+		 * to lock.
 		 * 
 		 * @param recNo
 		 *            Record number to be locked.
@@ -547,15 +547,17 @@ public class Data implements DB {
 		}
 		
 		/**
-		 * Unlock the record. i.e Removes the lockCookieValue from locksMap for the given recNo.
+		 * Unlock the record. i.e Removes the lockCookieValue from locksMap for
+		 * the given recNo.
 		 * 
-		 * @param recNo 
-		 * 			   Record number
+		 * @param recNo
+		 *            Record number
 		 * @param lockCookie
-		 *             Lock cookie value if the given lockCookie is same as the lockCookieValue for the recNo in the locksMap
+		 *            Lock cookie value if the given lockCookie is same as the
+		 *            lockCookieValue for the recNo in the locksMap
 		 * @throws SecurityException
-		 *             If the record is currently not locked. 
-		 *             If the record is locked by any other user.
+		 *             If the record is currently not locked. If the record is
+		 *             locked by any other user.
 		 */
 		public synchronized void unlock(int recNo, long lockCookie) throws SecurityException {
 			

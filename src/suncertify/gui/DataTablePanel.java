@@ -17,14 +17,22 @@ import javax.swing.table.AbstractTableModel;
 import suncertify.client.ClientModel;
 
 /**
- * @author Koosie
+ * This class creates the table view. This class holds the <code>JTable.</code>
+ * where the list of records been displayed. The inner class named
+ * {@link DataModel} is the <code>TableModel</code> for the <code>JTable.</code>
+ * 
+ * The class implements <code>Observer</code> so that the JTable could be
+ * updated with new records every time when there is a change in the
+ * <code>Observable</code> {@link ClientModel}.
+ * 
+ * <code>ClientModel</code> holds the information about the rows and column to
+ * be displayed in the <code>JTable</code>
+ * 
+ * @author nrkkalyan
  * 
  */
 public class DataTablePanel extends JPanel implements Observer {
 	
-	/**
-	 * 
-	 */
 	private static final long	serialVersionUID	= 1L;
 	private static int			TABLE_WIDTH			= 600;
 	private static int			TABLE_HIGHT			= 800;
@@ -33,6 +41,9 @@ public class DataTablePanel extends JPanel implements Observer {
 	private final JTable		mRecordTable		= new JTable(mTableDataModel);
 	private ClientModel			mClientModel;
 	
+	/**
+	 * Creates an instance of DataTablePanel.
+	 * */
 	public DataTablePanel() {
 		setLayout(new BorderLayout());
 		mRecordTable.setPreferredScrollableViewportSize(new Dimension(TABLE_WIDTH, TABLE_HIGHT));
@@ -44,11 +55,43 @@ public class DataTablePanel extends JPanel implements Observer {
 		
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
+	 */
+	@Override
+	public void update(Observable model, Object totalUpdate) {
+		mClientModel = (ClientModel) model;
+		if (totalUpdate instanceof Boolean) {
+			updateTableView((Boolean) totalUpdate);
+		} else {
+			updateTableView(false);
+		}
+		
+	}
+	
+	/**
+	 * @param totalUpdate
+	 */
+	private void updateTableView(Boolean totalUpdate) {
+		mTableDataModel.refresh();
+		if (totalUpdate) {
+			mTableDataModel.fireTableStructureChanged();
+			revalidate();
+			mRecordTable.revalidate();
+			mRecordTable.repaint();
+		} else {
+			mTableDataModel.fireTableDataChanged();
+		}
+	}
+	
+	public int getSelectedIndex() {
+		return mRecordTable.getSelectedRow();
+	}
+	
 	private class DataModel extends AbstractTableModel {
 		
-		/**
-		 * 
-		 */
 		private static final long	serialVersionUID	= 1L;
 		private String[]			mColumnNames		= new String[0];
 		private String[][]			mDisplayRows;
@@ -100,41 +143,6 @@ public class DataTablePanel extends JPanel implements Observer {
 			return "";
 		}
 		
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.Observer#update(java.util.Observable, java.lang.Object)
-	 */
-	@Override
-	public void update(Observable model, Object totalUpdate) {
-		mClientModel = (ClientModel) model;
-		if (totalUpdate instanceof Boolean) {
-			updateTableView((Boolean) totalUpdate);
-		} else {
-			updateTableView(false);
-		}
-		
-	}
-	
-	/**
-	 * @param totalUpdate
-	 */
-	private void updateTableView(Boolean totalUpdate) {
-		mTableDataModel.refresh();
-		if (totalUpdate) {
-			mTableDataModel.fireTableStructureChanged();
-			revalidate();
-			mRecordTable.revalidate();
-			mRecordTable.repaint();
-		} else {
-			mTableDataModel.fireTableDataChanged();
-		}
-	}
-	
-	public int getSelectedIndex() {
-		return mRecordTable.getSelectedRow();
 	}
 	
 }

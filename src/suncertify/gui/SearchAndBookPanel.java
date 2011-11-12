@@ -21,18 +21,30 @@ import javax.swing.JTextField;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 
+import suncertify.client.UrlyBirdClientController;
 import suncertify.common.CommonConstants;
 import suncertify.common.CommonConstants.ActionCommand;
 
 /**
- * @author Koosie
+ * This class extends JPanel to create a top panel in the application. The panel
+ * includes 2 input fields thus one can search the rooms by hotel name or
+ * location or both. There is also a book button available which can be used to
+ * book the selected room.
+ * <p>
+ * If nothing is provided in the input fields and the search button is pressed
+ * then the search will return all available records from the database file.
+ * <p>
+ * The file menu contains only one option 'Exit' which can be used to exit the
+ * application.
+ * <p>
+ * This class implements <code>ActionListener</code> thus used as a listener for
+ * the events triggered in this panel.
+ * 
+ * @author nrkkalyan
  * 
  */
 public class SearchAndBookPanel extends JPanel implements ActionListener {
 	
-	/**
-	 * 
-	 */
 	private static final long	serialVersionUID	= 1L;
 	
 	private final JMenuBar		mMenuBar			= new JMenuBar();
@@ -43,33 +55,32 @@ public class SearchAndBookPanel extends JPanel implements ActionListener {
 	
 	private ActionListener		mActionListner;
 	
+	/**
+	 * Creates a new instance of {@link SearchAndBookPanel}.
+	 * */
 	public SearchAndBookPanel() {
-		super();
 		this.setLayout(new BorderLayout());
 		
 		mSearchBtn.setToolTipText("Search rooms by hotel name and/or location");
-		mSearchBtn.setActionCommand(createCommand(ActionCommand.SEARCH_BY_NAME_AND_LOC));
+		mSearchBtn.setActionCommand(ActionCommand.SEARCH_BY_NAME_AND_LOC.name());
 		mSearchBtn.addActionListener(this);
 		
 		mBookButton.setToolTipText("Book the selected room");
-		mBookButton.setActionCommand(createCommand(ActionCommand.BOOK_ROOM));
+		mBookButton.setActionCommand(ActionCommand.BOOK_ROOM.name());
 		mBookButton.addActionListener(this);
 		
 		JMenuItem exit = new JMenuItem("Exit");
 		exit.addActionListener(this);
-		exit.setActionCommand(createCommand(ActionCommand.EXIT));
+		exit.setActionCommand(ActionCommand.EXIT.name());
 		JMenu file = new JMenu("File");
 		file.add(exit);
 		mMenuBar.add(file);
-		this.add(BorderLayout.NORTH, mMenuBar);
-		this.add(BorderLayout.SOUTH, addOtherUIComponents());
+		add(BorderLayout.NORTH, mMenuBar);
+		add(BorderLayout.SOUTH, addUIComponents());
 		
 	}
 	
-	/**
-	 * @return
-	 */
-	private Component addOtherUIComponents() {
+	private Component addUIComponents() {
 		
 		// HotelName
 		JPanel namePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -103,36 +114,44 @@ public class SearchAndBookPanel extends JPanel implements ActionListener {
 		return searchPanel;
 	}
 	
-	/*
-	 * (non-Javadoc)
+	/**
 	 * 
-	 * @see
-	 * java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+	 * If the search button is clicked a new <code>ActionEvent</code> is created
+	 * with a custom command
+	 * {@link CommonConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC}, hotelName
+	 * and location from the respective input fields. The command pattern looks
+	 * like
+	 * 
+	 * <pre>
+	 * SEARCH_BY_NAME_AND_LOC:<hotelName>:<location>
+	 * </pre>
+	 * 
+	 * <p>
+	 * And finally delegates the call to the {@link UrlyBirdClientController}
+	 * .actionPerformed().
+	 * 
+	 * 
 	 */
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		if (ae.getSource() == mSearchBtn) {
 			String hotelName = mHotelName.getText();
 			String location = mLocation.getText();
-			ae = new ActionEvent(mSearchBtn, ae.getID(), createCommand(CommonConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC, hotelName, location));
+			String command = CommonConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC.name() + ":" + hotelName + ":" + location;
+			ae = new ActionEvent(mSearchBtn, ae.getID(), command);
 		}
 		mActionListner.actionPerformed(ae);
 	}
 	
-	private String createCommand(ActionCommand command) {
-		return createCommand(command, null, null);
-	}
-	
-	private String createCommand(ActionCommand command, String hotelName, String location) {
-		if (hotelName != null || location != null) {
-			return command.name() + ":" + hotelName + ":" + location;
-		}
-		return command.name();
-	}
-	
 	/**
+	 * Sets the private ActionListner field to the given actionListner. In this
+	 * case {@link UrlyBirdClientController} class will act as the actionListner
+	 * thus the call can be delegated to
+	 * <code>UrlyBirdClientController.actionPerformed()</code> when the events
+	 * triggered by search and book buttons of this panel.
+	 * 
 	 * @param actionListner
-	 *            the actionListner to set
+	 *            the actionListner to set to
 	 */
 	public void setActionListener(ActionListener actionListner) {
 		this.mActionListner = actionListner;

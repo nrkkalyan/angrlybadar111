@@ -19,7 +19,6 @@ import java.util.Properties;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -30,19 +29,37 @@ import suncertify.common.CommonConstants;
 import suncertify.common.CommonConstants.ApplicationMode;
 
 /**
- * @author Koosie
+ * This class extends the {@link JDialog} and is used as settings dialog which
+ * will be shown when the application is started in any of the given mode (stand
+ * alone, server or network client).
+ * 
+ * The input fields to enter database file location, host name, and port will be
+ * enabled according to the application mode.
+ * <p>
+ * If application is started as
+ * 
+ * 
+ * <pre>
+ * 		'non network mode'  : only database file input field is enabled.
+ * 		'server' 			: only database file input field and port field is enabled.
+ * 		'network client'  	: only host and port input field is enabled.
+ * </pre>
+ * 
+ * </p>
+ * 
+ * The class also implements {@link ActionListener} thus can perform actions
+ * depending on the application mode.
+ * 
+ * @author nrkkalyan
  * 
  */
 
 public class PropertiesDialog extends JDialog implements ActionListener {
 	
-	/**
-	 * 
-	 */
 	private static final long		serialVersionUID		= 1L;
-	protected int					mStatus					= -1;
-	public static final int			OK						= 0;
-	public static final int			CANCEL					= -1;
+	private int						mStatus					= -1;
+	private static final int		OK						= 0;
+	private static final int		CANCEL					= -1;
 	private Properties				mProperties;
 	private final JButton			mOkButton				= new JButton("OK");
 	private final JButton			mCancelButton			= new JButton("Cancel");
@@ -51,11 +68,15 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 	private final JTextField		mFileNameSelectionText	= new JTextField("db-1x1.db");
 	private final JTextField		mServerHostText			= new JTextField("localhost");
 	private final JTextField		mServerPortText			= new JTextField("1099");
-	
 	private final ApplicationMode	mApplicationMode;
 	
-	public PropertiesDialog(JFrame parentFrame, final ApplicationMode applicationMode) {
-		super(parentFrame);
+	/**
+	 * Creates a new instance of PropertiesDialog.
+	 * 
+	 * @param applicationMode
+	 *            mode in which application is running.
+	 * */
+	public PropertiesDialog(ApplicationMode applicationMode) {
 		mApplicationMode = applicationMode;
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		setResizable(false);
@@ -78,11 +99,6 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		
 	}
 	
-	/**
-	 * @param mLocalFlag
-	 * @param mIsRmiServer
-	 * @param mIsNetworkClient
-	 */
 	private void initGuiComponents() {
 		boolean standAloneFlag = false;
 		boolean networkClientFlag = false;
@@ -123,9 +139,6 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		mServerHostText.setEnabled(networkClientFlag);
 	}
 	
-	/**
-	 * 
-	 */
 	private void initGui() {
 		setSize(370, 240);
 		getContentPane().setLayout(new GridBagLayout());
@@ -155,16 +168,14 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		gbc.weightx = 0.0;
 		this.getContentPane().add(mBrowseButton, gbc);
 		
-		// if (!mIsRmiServer) {
 		gbc.gridy = pos++;
 		this.getContentPane().add(new JLabel("Server Host"), gbc);
 		this.getContentPane().add(mServerHostText, gbc);
-		// }
-		// if (mIsRmiServer || !mLocalFlag) {
+		
 		gbc.gridy = pos++;
 		this.getContentPane().add(new JLabel("Server port"), gbc);
 		this.getContentPane().add(mServerPortText, gbc);
-		// }
+		
 		JPanel temppanel = new JPanel();
 		GridLayout gl = new GridLayout(1, 3);
 		gl.setHgap(20);
@@ -198,16 +209,13 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 	}
 	
 	/**
-	 * Reads a property file and loads the properties object. It then calls
-	 * showDialog() to display the GUI. Values in this properties object are
-	 * used as default values in the input fields. If the user clicks OK, the
-	 * new values are stored back into the file. Instead of using showDialog()
-	 * directly, this method can be used to have the additional functionality of
-	 * loading the properties from a file and saving them back in the same file.
+	 * Load the settings from 'suncertify.properties' file.
 	 * 
-	 * @throws Exception
-	 */
-	public Properties loadProperties() throws Exception {
+	 * @throws IOException
+	 *             if unable to read configurations from the setting properties
+	 *             file.
+	 * */
+	public Properties loadProperties() throws IOException {
 		mProperties = new Properties();
 		FileInputStream fis = new FileInputStream(CommonConstants.CONFIGURATION_FILE);
 		mProperties.load(fis);
@@ -223,6 +231,13 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		return mProperties;
 	}
 	
+	/**
+	 * Responsible for handling action events triggered in the dialog box.
+	 * 
+	 * @param ae
+	 *            actionEvent
+	 * 
+	 * */
 	@Override
 	public void actionPerformed(ActionEvent ae) {
 		Object src = ae.getSource();
@@ -274,20 +289,36 @@ public class PropertiesDialog extends JDialog implements ActionListener {
 		
 	}
 	
+	/**
+	 * Private inner class extending <code>FileFilter</code> thus can be used
+	 * with <code>JFileChooser</code> to filter files with '.db' extension.
+	 * 
+	 * */
 	private class DBFileFilter extends FileFilter {
 		
+		/**
+		 * Weather the given file has '.db' extension.
+		 * 
+		 * @param file
+		 *            File to check
+		 * */
 		@Override
-		public boolean accept(File f) {
-			if (f.isDirectory()) {
+		public boolean accept(File file) {
+			if (file.isDirectory()) {
 				return true;
 			}
-			if (f.getName().toLowerCase().endsWith(".db")) {
+			if (file.getName().toLowerCase().endsWith(".db")) {
 				return true;
 			} else {
 				return false;
 			}
 		}
 		
+		/**
+		 * Description to be displayed in the JFileChooser dialog.
+		 * 
+		 * @return the description to be displayed
+		 * */
 		@Override
 		public String getDescription() {
 			return "UrlyBird DB(*.db)";

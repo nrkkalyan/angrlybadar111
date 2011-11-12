@@ -8,17 +8,10 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 
-import suncertify.client.UrlyBirdClientController;
 import suncertify.common.CommonConstants;
 
 /**
- * This class is the main view of the application, mainly the view part of MVC
- * pattern. It displays the menubar of the application and the table with the
- * list of available rooms. This class sends all the user interactions to the
- * {@link UrlyBirdClientController} which is just an ActionListner. Depending on
- * the event triggered the controller takes an appropriate action.
- * 
- * @author Koosie
+ 
  * 
  */
 public class UrlyBirdClientFrame extends JFrame {

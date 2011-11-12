@@ -88,7 +88,7 @@ public class UrlyBirdRmiServer extends JFrame implements ActionListener {
 	public static void start() throws Exception {
 		try {
 			mUrlyBirdRmiServer = new UrlyBirdRmiServer();
-			mUBPropertyDialog	= new PropertiesDialog(mUrlyBirdRmiServer, ApplicationMode.SERVER);
+			mUBPropertyDialog	= new PropertiesDialog(ApplicationMode.SERVER);
 			
 			Properties props = mUBPropertyDialog.loadProperties();
 			String host = props.getProperty(CommonConstants.SERVER_HOST).trim();

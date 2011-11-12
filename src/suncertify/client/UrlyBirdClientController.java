@@ -52,7 +52,7 @@ public class UrlyBirdClientController implements ActionListener {
 		mClientModel.addObserver(mClientFrame.getTablePanel());
 		mClientModel.notifyObservers(true);
 		mApplicationMode = applicationMode;
-		mUBPropertiesDialog = new PropertiesDialog(mClientFrame, applicationMode);
+		mUBPropertiesDialog = new PropertiesDialog(applicationMode);
 		mClientFrame.addWindowListener(new WindowAdapter() {
 			
 			@Override

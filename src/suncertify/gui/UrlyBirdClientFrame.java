@@ -45,7 +45,10 @@ public class UrlyBirdClientFrame extends JFrame {
 		mSearchAndBookPanel.setUrlyBirdClientController(urlyBirdClientController);
 	}
 	
-	public DataTablePanel getTablePanel() {
+	/**
+	 * Returns the DataTablePanel
+	 * */
+	public DataTablePanel getDataTablePanel() {
 		return mDataTablePanel;
 	}
 	

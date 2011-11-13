@@ -50,7 +50,7 @@ public class UrlyBirdClientController implements ActionListener {
 		mClientFrame = ubClientFrame;
 		mClientFrame.setControlPanelActionListener(this);
 		mClientModel = new ClientModel();
-		mClientModel.addObserver(mClientFrame.getTablePanel());
+		mClientModel.addObserver(mClientFrame.getDataTablePanel());
 		mClientModel.notifyObservers(true);
 		mApplicationMode = applicationMode;
 		mUBPropertiesDialog = new PropertiesDialog(applicationMode);
@@ -162,7 +162,7 @@ public class UrlyBirdClientController implements ActionListener {
 			return;
 		}
 		
-		int index = mClientFrame.getTablePanel().getSelectedIndex();
+		int index = mClientFrame.getDataTablePanel().getSelectedIndex();
 		if (index == -1) {
 			JOptionPane.showMessageDialog(mClientFrame, "Please select a room first.", CommonConstants.APPLICATION_NAME, JOptionPane.INFORMATION_MESSAGE);
 			return;

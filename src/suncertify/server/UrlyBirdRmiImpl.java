@@ -3,7 +3,7 @@
  */
 package suncertify.server;
 
-import java.rmi.RemoteException;
+import java.io.IOException;
 import java.rmi.server.UnicastRemoteObject;
 
 import suncertify.db.RecordNotFoundException;
@@ -24,19 +24,20 @@ public class UrlyBirdRmiImpl extends UnicastRemoteObject implements UB {
 	
 	/**
 	 * @param dbFileName
+	 * @throws IOException 
 	 */
-	public UrlyBirdRmiImpl(String dbFileName) throws RemoteException, Exception, SecurityException {
+	public UrlyBirdRmiImpl(String dbFileName) throws SecurityException, IOException {
 		mUrlyBirdImpl = new UrlyBirdImpl(dbFileName);
 	}
 	
 	@Override
-	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException,SecurityException, Exception{
+	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException,SecurityException{
 		return mUrlyBirdImpl.searchByHotelNameAndLocation(hotelName, location);
 	}
 	
 	@Override
-	public boolean bookRoom(String customerid, String[] data) throws RecordNotFoundException,SecurityException, Exception {
-		return mUrlyBirdImpl.bookRoom(customerid, data);
+	public void bookRoom(String customerid, String[] data) throws RecordNotFoundException,SecurityException{
+		mUrlyBirdImpl.bookRoom(customerid, data);
 	}
 
 	public void close() {

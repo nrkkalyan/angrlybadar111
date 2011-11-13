@@ -3,6 +3,8 @@
  */
 package suncertify.server;
 
+import java.io.IOException;
+
 import suncertify.db.DB;
 import suncertify.db.Data;
 import suncertify.db.RecordNotFoundException;
@@ -15,12 +17,12 @@ import suncertify.db.SecurityException;
 public class UrlyBirdImpl implements UB {
 	private DB	db;
 	
-	public UrlyBirdImpl(String dbFileName) throws Exception, SecurityException {
+	public UrlyBirdImpl(String dbFileName) throws SecurityException, IOException {
 			db = new Data(dbFileName);
 	}
 	
 	@Override
-	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException, Exception {
+	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException {
 		if (db == null) {
 			throw new NullPointerException("Communication error to database. Details : Database connection is not available");
 		}
@@ -56,11 +58,10 @@ public class UrlyBirdImpl implements UB {
 	}
 	
 	@Override
-	public boolean bookRoom(String customerid, String[] originalData) throws RecordNotFoundException, SecurityException, Exception {
+	public void bookRoom(String customerid, String[] originalData) throws RecordNotFoundException, SecurityException {
 		if (db == null) {
-			throw new Exception("Communication error to database. Details : Database connection is not available");
+			throw new NullPointerException("Communication error to database. Details : Database connection is not available");
 		}
-		boolean status = false;
 		Long lockkey = null;
 		Integer recordNo = null;
 		try {
@@ -77,15 +78,13 @@ public class UrlyBirdImpl implements UB {
 				}
 				
 				if (datachanged) {
-					throw new Exception("The data was updated. Please refresh your view and try again.");
+					throw new SecurityException("The record is modified, please try again.");
 				}
 				
 				data[6] = customerid;
 				db.update(recordNo, data, lockkey);
-				status = true;
-				return status;
 			} else {
-				throw new Exception("This room is already booked.");
+				throw new RecordNotFoundException("This room is already booked.");
 			}
 		} finally {
 			try {

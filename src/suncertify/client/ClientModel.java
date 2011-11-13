@@ -51,7 +51,7 @@ public class ClientModel extends Observable {
 	
 	/**
 	 * Returns the column names corresponding to the Urlybird 1.1 database structure.
-	 * @returns the column names as a string array.
+	 * @return the column names as a string array.
 	 */
 	public String[] getColumns() {
 		return mColumnNames;

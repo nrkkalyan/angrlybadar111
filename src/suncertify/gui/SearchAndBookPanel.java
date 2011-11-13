@@ -45,15 +45,15 @@ import suncertify.common.CommonConstants.ActionCommand;
  */
 public class SearchAndBookPanel extends JPanel implements ActionListener {
 	
-	private static final long	serialVersionUID	= 1L;
+	private static final long			serialVersionUID	= 1L;
 	
-	private final JMenuBar		mMenuBar			= new JMenuBar();
-	private final JTextField	mHotelName			= new JTextField(10);
-	private final JTextField	mLocation			= new JTextField(10);
-	private final JButton		mSearchBtn			= new JButton("Search / Show All");
-	private final JButton		mBookButton			= new JButton("Book");
+	private final JMenuBar				mMenuBar			= new JMenuBar();
+	private final JTextField			mHotelName			= new JTextField(10);
+	private final JTextField			mLocation			= new JTextField(10);
+	private final JButton				mSearchBtn			= new JButton("Search / Show All");
+	private final JButton				mBookButton			= new JButton("Book");
 	
-	private ActionListener		mActionListner;
+	private UrlyBirdClientController	mUrlyBirdClientController;
 	
 	/**
 	 * Creates a new instance of {@link SearchAndBookPanel}.
@@ -140,21 +140,21 @@ public class SearchAndBookPanel extends JPanel implements ActionListener {
 			String command = CommonConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC.name() + ":" + hotelName + ":" + location;
 			ae = new ActionEvent(mSearchBtn, ae.getID(), command);
 		}
-		mActionListner.actionPerformed(ae);
+		mUrlyBirdClientController.actionPerformed(ae);
 	}
 	
 	/**
-	 * Sets the private ActionListner field to the given actionListner. In this
-	 * case {@link UrlyBirdClientController} class will act as the actionListner
-	 * thus the call can be delegated to
+	 * Sets the private UrlyBirdClientController field thus
+	 * {@link UrlyBirdClientController} class will act as the actionListner for this class and
+	 * the call can be delegated to
 	 * <code>UrlyBirdClientController.actionPerformed()</code> when the events
 	 * triggered by search and book buttons of this panel.
 	 * 
-	 * @param actionListner
-	 *            the actionListner to set to
+	 * @param urlyBirdClientController
+	 *            the {@link UrlyBirdClientController} instance
 	 */
-	public void setActionListener(ActionListener actionListner) {
-		this.mActionListner = actionListner;
+	public void setUrlyBirdClientController(UrlyBirdClientController urlyBirdClientController) {
+		this.mUrlyBirdClientController = urlyBirdClientController;
 	}
 	
 }

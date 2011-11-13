@@ -4,44 +4,49 @@
 package suncertify.gui;
 
 import java.awt.BorderLayout;
-import java.awt.event.ActionListener;
 
 import javax.swing.JFrame;
 
+import suncertify.client.UrlyBirdClientController;
 import suncertify.common.CommonConstants;
 
 /**
- 
+ * This class makes the main user interface of the client application. The class
+ * has the {@link SearchAndBookPanel} and {@link DataTablePanel}.
  * 
+ * {@link SearchAndBookPanel} is used to search and book the rooms. And
+ * {@link DataTablePanel} displays the total available records as a result of
+ * search.
+ * 
+ * @author nrkkalyan
  */
 public class UrlyBirdClientFrame extends JFrame {
 	
-	/**
-	 * 
-	 */
-	private static final long	serialVersionUID	= 1L;
+	private static final long			serialVersionUID	= 1L;
+	private final SearchAndBookPanel	mSearchAndBookPanel;
+	private final DataTablePanel		mDataTablePanel;
 	
-	/**
-	 * Panel that contains the menubar.
-	 * */
-	private final SearchAndBookPanel	mControlPannel;
-	private final DataTablePanel	mTablePannel;
-	
+	/** Creates an instance of {@link UrlyBirdClientFrame}. */
 	public UrlyBirdClientFrame() {
 		super(CommonConstants.APPLICATION_NAME);
-		mControlPannel = new SearchAndBookPanel();
-		mTablePannel = new DataTablePanel();
-		this.getContentPane().add(BorderLayout.NORTH, mControlPannel);
-		this.getContentPane().add(BorderLayout.CENTER, mTablePannel);
+		mSearchAndBookPanel = new SearchAndBookPanel();
+		mDataTablePanel = new DataTablePanel();
+		this.getContentPane().add(BorderLayout.NORTH, mSearchAndBookPanel);
+		this.getContentPane().add(BorderLayout.CENTER, mDataTablePanel);
 	}
 	
-	public void setControlPanelActionListener(ActionListener al) {
-		mControlPannel.setActionListener(al);
+	/**
+	 * Set the SearchAndBookPanel's <code>UrlyBirdClientController</code>
+	 * 
+	 * @param urlyBirdClientController
+	 *            UrlyBirdClientController instance
+	 * */
+	public void setControlPanelActionListener(UrlyBirdClientController urlyBirdClientController) {
+		mSearchAndBookPanel.setUrlyBirdClientController(urlyBirdClientController);
 	}
-	
 	
 	public DataTablePanel getTablePanel() {
-		return mTablePannel;
+		return mDataTablePanel;
 	}
 	
 }

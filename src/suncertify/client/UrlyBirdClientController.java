@@ -48,6 +48,7 @@ public class UrlyBirdClientController implements ActionListener {
 	 */
 	public UrlyBirdClientController(UrlyBirdClientFrame ubClientFrame, ApplicationMode applicationMode) throws Exception {
 		mClientFrame = ubClientFrame;
+		mClientFrame.setControlPanelActionListener(this);
 		mClientModel = new ClientModel();
 		mClientModel.addObserver(mClientFrame.getTablePanel());
 		mClientModel.notifyObservers(true);

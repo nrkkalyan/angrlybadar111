@@ -51,8 +51,7 @@ public class Main {
 	private static void startClient(final ApplicationMode clientType)
 			throws Exception {
 		UrlyBirdClientFrame clientFrame = new UrlyBirdClientFrame();
-		UrlyBirdClientController controller = new UrlyBirdClientController(clientFrame, clientType);
-		clientFrame.setControlPanelActionListener(controller);
+		new UrlyBirdClientController(clientFrame, clientType);
 		clientFrame.setSize(700, 700);
 		clientFrame.setLocationRelativeTo(null);
 		clientFrame.setVisible(true);

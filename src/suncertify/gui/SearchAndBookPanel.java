@@ -118,9 +118,9 @@ public class SearchAndBookPanel extends JPanel implements ActionListener {
 	 * 
 	 * If the search button is clicked a new <code>ActionEvent</code> is created
 	 * with a custom command
-	 * {@link CommonConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC}, hotelName
-	 * and location from the respective input fields. The command pattern looks
-	 * like
+	 * <code>CommonConstants.ActionCommand.SEARCH_BY_NAME_AND_LOC</code>,
+	 * hotelName and location from the respective input fields. The command
+	 * pattern looks like
 	 * 
 	 * <pre>
 	 * SEARCH_BY_NAME_AND_LOC:<hotelName>:<location>
@@ -145,8 +145,8 @@ public class SearchAndBookPanel extends JPanel implements ActionListener {
 	
 	/**
 	 * Sets the private UrlyBirdClientController field thus
-	 * {@link UrlyBirdClientController} class will act as the actionListner for this class and
-	 * the call can be delegated to
+	 * {@link UrlyBirdClientController} class will act as the actionListner for
+	 * this class and the call can be delegated to
 	 * <code>UrlyBirdClientController.actionPerformed()</code> when the events
 	 * triggered by search and book buttons of this panel.
 	 * 

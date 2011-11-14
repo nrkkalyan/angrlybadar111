@@ -13,7 +13,7 @@ public interface DB {
 	 * record value.
 	 * 
 	 * @param recNo
-	 * @return
+	 * @return 
 	 * @throws RecordNotFoundException
 	 */
 	public String[] read(int recNo) throws RecordNotFoundException;

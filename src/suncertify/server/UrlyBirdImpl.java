@@ -11,21 +11,37 @@ import suncertify.db.RecordNotFoundException;
 import suncertify.db.SecurityException;
 
 /**
- * @author Koosie
+ * 
+ * This class implements all the business methods required by the application
+ * client. The networked server also calls the methods of this class to perform
+ * the desired operations.
+ * 
+ * @author nrkkalyan
  * 
  */
 public class UrlyBirdImpl implements UB {
 	private DB	db;
 	
+	/**
+	 * Constructs an instance of {@link UrlyBirdImpl}.
+	 * 
+	 * @param dbFileName
+	 *            database file path
+	 * 
+	 * @throws SecurityException
+	 *             if the database file is invalid
+	 * @throws IOException
+	 *             if unable to read the database file
+	 * */
 	public UrlyBirdImpl(String dbFileName) throws SecurityException, IOException {
-			db = new Data(dbFileName);
+		db = new Data(dbFileName);
 	}
 	
-	@Override
+	/**
+	 * Search 
+	 * */
+ 	@Override
 	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException {
-		if (db == null) {
-			throw new NullPointerException("Communication error to database. Details : Database connection is not available");
-		}
 		
 		String[] criteria = new String[] { hotelName, location, null, null, null, null, null };
 		
@@ -59,9 +75,7 @@ public class UrlyBirdImpl implements UB {
 	
 	@Override
 	public void bookRoom(String customerid, String[] originalData) throws RecordNotFoundException, SecurityException {
-		if (db == null) {
-			throw new NullPointerException("Communication error to database. Details : Database connection is not available");
-		}
+
 		Long lockkey = null;
 		Integer recordNo = null;
 		try {

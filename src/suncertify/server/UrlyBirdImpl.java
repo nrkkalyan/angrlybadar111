@@ -12,39 +12,60 @@ import suncertify.db.SecurityException;
 
 /**
  * 
- * This class implements all the business methods required by the application
- * client. The networked server also calls the methods of this class to perform
- * the desired operations.
+ * <code>UrlyBirdImpl</code> class implements all the business methods required
+ * by the application client. The networked server also calls the methods of
+ * this class to perform the desired operations.
  * 
  * @author nrkkalyan
  * 
  */
 public class UrlyBirdImpl implements UB {
-	private DB	db;
-	
+	private DB db;
+
 	/**
 	 * Constructs an instance of {@link UrlyBirdImpl}.
 	 * 
 	 * @param dbFileName
-	 *            database file path
+	 *            Database file path
 	 * 
 	 * @throws SecurityException
 	 *             if the database file is invalid
 	 * @throws IOException
 	 *             if unable to read the database file
 	 * */
-	public UrlyBirdImpl(String dbFileName) throws SecurityException, IOException {
+	public UrlyBirdImpl(String dbFileName) throws SecurityException,
+			IOException {
 		db = new Data(dbFileName);
 	}
-	
+
 	/**
-	 * Search 
+	 * Search the database and return all the records that exactly match the
+	 * given hotelName and location. If hotelName and location both are null or
+	 * empty then all records will be returned.
+	 * 
+	 * The lock is acquired over the database then using DB.find(String[]) which
+	 * returns the record numbers matching the criteria and using DB.read(int)
+	 * String[][] is constructed and returned finally the database is unlocked.
+	 * 
+	 * @param hotelName
+	 *            Hotel name to be searched
+	 * @param location
+	 *            Hotel location to be searched
+	 * @return string[][] matching the given criteria
+	 * 
+	 * @throws RecordNotFoundException
+	 *             if any record is not found for a record number
+	 * @throws SecurityException
+	 *             if the database is locked
+	 * 
 	 * */
- 	@Override
-	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException {
-		
-		String[] criteria = new String[] { hotelName, location, null, null, null, null, null };
-		
+	@Override
+	public String[][] searchByHotelNameAndLocation(String hotelName,
+			String location) throws RecordNotFoundException, SecurityException {
+
+		String[] criteria = new String[] { hotelName, location, null, null,
+				null, null, null };
+
 		String[][] retval = null;
 		Long lockkey = null;
 		try {
@@ -59,7 +80,6 @@ public class UrlyBirdImpl implements UB {
 					retval[i][j + 1] = data[j].trim();
 				}
 			}
-			db.unlock(-1, lockkey);
 		} finally {
 			try {
 				if (lockkey != null)
@@ -69,12 +89,45 @@ public class UrlyBirdImpl implements UB {
 				// Ignore
 			}
 		}
-		
+
 		return retval;
 	}
-	
+
+	/**
+	 * Attach the customerId to the selected record and thus mark the record as
+	 * booked with the specified customerId. This method will throw
+	 * SecurityException in case the data of the selected record is modified by
+	 * any other user during the booking process.
+	 * 
+	 * The booking process involves few steps,<br>
+	 * Step 1: Using DB.lock(int) try to acquire the lock on the selected record
+	 * till the record is available for locking.<br>
+	 * Step 2: Once the lock is acquired read the data[] using DB.read(int)<br>
+	 * Step 3: Verify if the 7th field in the data[] is null or empty if not
+	 * throw SecurityException, otherwise proceed step 4<br>
+	 * Step 4: Verify if the data is modified by any other user during the above
+	 * steps, this can be done by comparing the data in the originalData and the
+	 * data[], if yes then <code>SecurityException</code> is thrown, otherwise
+	 * proceed step 5.<br>
+	 * Step 5: After that 7th field of data[] is set to customerId and database
+	 * is updated.<br>
+	 * Step 6: Finally unlock the record.
+	 * 
+	 * @param customerId
+	 *            customer id to be booked for
+	 * @param originalData
+	 *            String[] representing the original data as shown on the client
+	 * 
+	 * @throws RecordNotFoundException
+	 *             if the selected record is not found or deleted during the
+	 *             booking process
+	 * @throws SecurityException
+	 *             if the selected record could not be booked<br>
+	 *             if the data is modified during the booking process
+	 * */
 	@Override
-	public void bookRoom(String customerid, String[] originalData) throws RecordNotFoundException, SecurityException {
+	public void bookRoom(String customerId, String[] originalData)
+			throws RecordNotFoundException, SecurityException {
 
 		Long lockkey = null;
 		Integer recordNo = null;
@@ -90,15 +143,16 @@ public class UrlyBirdImpl implements UB {
 						break;
 					}
 				}
-				
+
 				if (datachanged) {
-					throw new SecurityException("The record is modified, please try again.");
+					throw new SecurityException(
+							"The record is modified, please try again.");
 				}
-				
-				data[6] = customerid;
+
+				data[6] = customerId;
 				db.update(recordNo, data, lockkey);
 			} else {
-				throw new RecordNotFoundException("This room is already booked.");
+				throw new SecurityException("This room is already booked.");
 			}
 		} finally {
 			try {
@@ -111,10 +165,14 @@ public class UrlyBirdImpl implements UB {
 			}
 		}
 	}
-	
+
+	/**
+	 * Closes the database and waits till all the clients are done, and clears
+	 * all the locks acquired.
+	 */
 	public void close() {
 		((Data) db).close();
 		db = null;
 	}
-	
+
 }

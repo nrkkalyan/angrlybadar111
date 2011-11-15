@@ -91,7 +91,7 @@ public class UrlyBirdClientController implements ActionListener {
 			}
 			return ubImpl;
 		} catch (Exception e) {
-			String message = "Failed to connect. Application will exit. Reason: " + e.getMessage();
+			String message = "Failed to connect. Application will exit. " + e.getMessage();
 			JOptionPane.showMessageDialog(null, message, "UB Message", JOptionPane.ERROR_MESSAGE);
 			throw new Exception(message);
 		}
@@ -122,6 +122,8 @@ public class UrlyBirdClientController implements ActionListener {
 					loc  = (parameters[2] != null && !parameters[2].isEmpty())? parameters[2]:null;
 				}
 				
+				mCurrentHotelName = name;
+				mCurrentLocation = loc;
 				searchByHotelNameAndLocation(name, loc);
 				break;
 			}
@@ -133,7 +135,7 @@ public class UrlyBirdClientController implements ActionListener {
 				int choice = JOptionPane.showConfirmDialog(mClientFrame, "Do you really want to exit?", CommonConstants.APPLICATION_NAME, JOptionPane.YES_NO_OPTION);
 				if (choice == JOptionPane.YES_OPTION) {
 					closeUBImpl();
-					System.exit(0);
+					
 				}
 				break;
 			}
@@ -151,6 +153,7 @@ public class UrlyBirdClientController implements ActionListener {
 		if (mUBImpl != null && mApplicationMode ==  ApplicationMode.ALONE) {
 			((UrlyBirdImpl) mUBImpl).close();
 		}
+		System.exit(0);
 	}
 	
 	/* Book the selected room if available.

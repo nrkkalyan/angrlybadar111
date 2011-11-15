@@ -20,8 +20,8 @@ import suncertify.db.SecurityException;
  * 
  */
 public class UrlyBirdImpl implements UB {
-	private DB db;
-
+	private DB	db;
+	
 	/**
 	 * Constructs an instance of {@link UrlyBirdImpl}.
 	 * 
@@ -31,13 +31,12 @@ public class UrlyBirdImpl implements UB {
 	 * @throws SecurityException
 	 *             if the database file is invalid
 	 * @throws IOException
-	 *             if unable to read the database file
+	 *             if unable to create an instance of {@link Data}
 	 * */
-	public UrlyBirdImpl(String dbFileName) throws SecurityException,
-			IOException {
+	public UrlyBirdImpl(String dbFileName) throws SecurityException, IOException {
 		db = new Data(dbFileName);
 	}
-
+	
 	/**
 	 * Search the database and return all the records that exactly match the
 	 * given hotelName and location. If hotelName and location both are null or
@@ -56,16 +55,14 @@ public class UrlyBirdImpl implements UB {
 	 * @throws RecordNotFoundException
 	 *             if any record is not found for a record number
 	 * @throws SecurityException
-	 *             if the database is locked
+	 *             if unable to unlock the record
 	 * 
 	 * */
 	@Override
-	public String[][] searchByHotelNameAndLocation(String hotelName,
-			String location) throws RecordNotFoundException, SecurityException {
-
-		String[] criteria = new String[] { hotelName, location, null, null,
-				null, null, null };
-
+	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException {
+		
+		String[] criteria = new String[] { hotelName, location, null, null, null, null, null };
+		
 		String[][] retval = null;
 		Long lockkey = null;
 		try {
@@ -89,28 +86,34 @@ public class UrlyBirdImpl implements UB {
 				// Ignore
 			}
 		}
-
+		
 		return retval;
 	}
-
+	
 	/**
 	 * Attach the customerId to the selected record and thus mark the record as
 	 * booked with the specified customerId. This method will throw
-	 * SecurityException in case the data of the selected record is modified by
-	 * any other user during the booking process.
+	 * <code>SecurityException</code> in case the data of the selected record is
+	 * modified by any other user during the booking process.
 	 * 
-	 * The booking process involves few steps,<br>
+	 * The booking process involves few steps,
+	 * <p>
 	 * Step 1: Using DB.lock(int) try to acquire the lock on the selected record
-	 * till the record is available for locking.<br>
-	 * Step 2: Once the lock is acquired read the data[] using DB.read(int)<br>
+	 * till the record is available for locking.
+	 * <p>
+	 * Step 2: Once the lock is acquired read the data[] using DB.read(int)
+	 * <p>
 	 * Step 3: Verify if the 7th field in the data[] is null or empty if not
-	 * throw SecurityException, otherwise proceed step 4<br>
+	 * throw <code>SecurityException</code>, otherwise proceed step 4
+	 * <p>
 	 * Step 4: Verify if the data is modified by any other user during the above
 	 * steps, this can be done by comparing the data in the originalData and the
 	 * data[], if yes then <code>SecurityException</code> is thrown, otherwise
-	 * proceed step 5.<br>
-	 * Step 5: After that 7th field of data[] is set to customerId and database
-	 * is updated.<br>
+	 * proceed step 5.
+	 * <p>
+	 * Step 5: After that 6th index of data[] is set to customerId and database
+	 * file is updated.
+	 * <p>
 	 * Step 6: Finally unlock the record.
 	 * 
 	 * @param customerId
@@ -122,13 +125,15 @@ public class UrlyBirdImpl implements UB {
 	 *             if the selected record is not found or deleted during the
 	 *             booking process
 	 * @throws SecurityException
-	 *             if the selected record could not be booked<br>
+	 *             if unable to book the room
+	 *             <p>
 	 *             if the data is modified during the booking process
+	 *             <p>
+	 *             if unable to unlock the record
 	 * */
 	@Override
-	public void bookRoom(String customerId, String[] originalData)
-			throws RecordNotFoundException, SecurityException {
-
+	public void bookRoom(String customerId, String[] originalData) throws RecordNotFoundException, SecurityException {
+		
 		Long lockkey = null;
 		Integer recordNo = null;
 		try {
@@ -143,12 +148,11 @@ public class UrlyBirdImpl implements UB {
 						break;
 					}
 				}
-
+				
 				if (datachanged) {
-					throw new SecurityException(
-							"The record is modified, please try again.");
+					throw new SecurityException("The record is modified, please try again.");
 				}
-
+				
 				data[6] = customerId;
 				db.update(recordNo, data, lockkey);
 			} else {
@@ -165,14 +169,16 @@ public class UrlyBirdImpl implements UB {
 			}
 		}
 	}
-
+	
 	/**
 	 * Closes the database and waits till all the clients are done, and clears
 	 * all the locks acquired.
 	 */
 	public void close() {
-		((Data) db).close();
-		db = null;
+		if (db != null) {
+			((Data) db).close();
+			db = null;
+		}
 	}
-
+	
 }

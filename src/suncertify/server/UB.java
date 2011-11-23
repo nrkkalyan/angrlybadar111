@@ -3,6 +3,9 @@
  */
 package suncertify.server;
 
+import java.rmi.Remote;
+import java.rmi.RemoteException;
+
 import suncertify.db.RecordNotFoundException;
 import suncertify.db.SecurityException;
 
@@ -13,11 +16,14 @@ import suncertify.db.SecurityException;
  * This interface is implemented by both networked and non-networked application
  * classes.
  * 
+ * The interface also extends <code>java.rmi.Remote</code>. The benefit of this
+ * approach is we can have a common interface for both network and non-network
+ * mode servers. can be used as a
  * 
  * @author nrkkalyan
  * 
  */
-public interface UB {
+public interface UB extends Remote {
 	
 	/**
 	 * Search the available records for the given hotelName and location.
@@ -32,8 +38,10 @@ public interface UB {
 	 *             if a record is not found for a given record number.
 	 * @throws SecurityException
 	 *             if could not able to read the database file
+	 * @throws RemoteException
+	 *             if unable to invoke the method in network mode
 	 */
-	String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException;
+	String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException, RemoteException;
 	
 	/**
 	 * Updates the selected room with the given customerId and thus the room is
@@ -50,6 +58,9 @@ public interface UB {
 	 * @throws SecurityException
 	 *             if the record is modified or could not able to attain the
 	 *             lock on the selected record.
+	 * @throws RemoteException
+	 *             if unable to invoke the method in network mode
 	 */
-	void bookRoom(String customerid, String[] data) throws RecordNotFoundException, SecurityException;
+	void bookRoom(String customerid, String[] data) throws RecordNotFoundException, SecurityException, RemoteException;
+	
 }

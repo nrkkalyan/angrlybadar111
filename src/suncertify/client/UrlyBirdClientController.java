@@ -21,6 +21,7 @@ import suncertify.gui.SearchAndBookPanel;
 import suncertify.gui.UrlyBirdClientFrame;
 import suncertify.server.UB;
 import suncertify.server.UrlyBirdImpl;
+import suncertify.server.UrlyBirdRmiServer;
 
 /**
  * <code>UrlyBirdClientController</code> is the controller of the application. All user actions are handled in this class.
@@ -83,7 +84,7 @@ public class UrlyBirdClientController implements ActionListener {
 				String host = prop.getProperty(CommonConstants.SERVER_HOST);
 				String port = prop.getProperty(CommonConstants.SERVER_PORT);
 				
-				String name = "rmi://" + host + ":" + port + CommonConstants.REMOTE_SERVER_NAME;
+				String name = UrlyBirdRmiServer.getRmiUrl(host, port);
 				Remote remoteObj = Naming.lookup(name);
 				ubImpl = (UB) remoteObj;
 			} else{
@@ -147,7 +148,7 @@ public class UrlyBirdClientController implements ActionListener {
 		
 	}
 
-	/* Close the database when the application exit.
+	/** Close the database when the application exit.
 	 * */
 	private void closeUBImpl() {
 		if (mUBImpl != null && mApplicationMode ==  ApplicationMode.ALONE) {
@@ -156,7 +157,7 @@ public class UrlyBirdClientController implements ActionListener {
 		System.exit(0);
 	}
 	
-	/* Book the selected room if available.
+	/** Book the selected room if available.
 	 */
 	private void bookRoom() {
 		
@@ -193,7 +194,7 @@ public class UrlyBirdClientController implements ActionListener {
 		searchByHotelNameAndLocation(mCurrentHotelName, mCurrentLocation);
 	}
 	
-	/*
+	/**
 	 * Check if the entered customerId is valid
 	 * 
 	 * @param customerId
@@ -210,7 +211,7 @@ public class UrlyBirdClientController implements ActionListener {
 		return result;
 	}
 	
-	/*
+	/**
 	 * Search the database for specific hotelName and location.
 	 * 
 	 * @param hotelName
@@ -233,7 +234,7 @@ public class UrlyBirdClientController implements ActionListener {
 		
 	}
 	
-	/*
+	/**
 	 * Show all rooms in the database.
 	 */
 	private void showAllRooms() {

@@ -22,7 +22,7 @@ import suncertify.db.SecurityException;
 public class UrlyBirdImpl implements UB {
 	private DB	db;
 	
-	/**
+	/** 
 	 * Constructs an instance of {@link UrlyBirdImpl}.
 	 * 
 	 * @param dbFileName

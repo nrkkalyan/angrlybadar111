@@ -4,6 +4,7 @@
 package suncertify.server;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import suncertify.db.RecordNotFoundException;
@@ -66,12 +67,15 @@ public class UrlyBirdRmiImpl extends UnicastRemoteObject implements UB {
 	 *             if a record is not found or deleted for a record number.
 	 * @throws SecurityException
 	 *             if the unable to unlock the record.
+	 * @throws RemoteException
+	 *             if unable to invoke the method
 	 * 
 	 * @see suncertify.server.UrlyBirdImpl#searchByHotelNameAndLocation(java.lang.String,
 	 *      java.lang.String)
+	 * 
 	 * */
 	@Override
-	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException {
+	public String[][] searchByHotelNameAndLocation(String hotelName, String location) throws RecordNotFoundException, SecurityException, RemoteException {
 		return mUrlyBirdImpl.searchByHotelNameAndLocation(hotelName, location);
 	}
 	
@@ -94,13 +98,14 @@ public class UrlyBirdRmiImpl extends UnicastRemoteObject implements UB {
 	 *             if unable to unlock the record.
 	 *             <p>
 	 *             if the data is modified during the booking process
-	 * 
+	 * @throws RemoteException
+	 *             if unable to invoke the method
 	 * 
 	 * @see suncertify.server.UrlyBirdImpl#bookRoom(java.lang.String,
 	 *      java.lang.String[])
 	 */
 	@Override
-	public void bookRoom(String customerid, String[] data) throws RecordNotFoundException, SecurityException {
+	public void bookRoom(String customerid, String[] data) throws RecordNotFoundException, SecurityException, RemoteException {
 		mUrlyBirdImpl.bookRoom(customerid, data);
 	}
 	
